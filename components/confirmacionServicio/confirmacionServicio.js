@@ -1,17 +1,10 @@
-// Datos de la reserva actual
 let reservaActual = {
-  servicio: {
-    nombre: "CORTE BÁSICO",
-    precio: 50000,
-  },
-  profesional: {
-    nombre: "ANDREA RIVERA",
-  },
+  servicio: { nombre: "CORTE BÁSICO", precio: 50000 },
+  profesional: { nombre: "ANDREA RIVERA" },
   fecha: "ABR 25",
   hora: "2:00 PM",
 };
 
-// Referencias a los elementos
 let elementos = {};
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -53,19 +46,13 @@ function formatearPrecio(precio) {
   }).format(precio);
 }
 
-// Funciones para otros componentes
 function actualizarServicio(nombre, precio) {
-  reservaActual.servicio = {
-    nombre: nombre.toUpperCase(),
-    precio: precio,
-  };
+  reservaActual.servicio = { nombre: nombre.toUpperCase(), precio };
   renderizar();
 }
 
 function actualizarProfesional(nombre) {
-  reservaActual.profesional = {
-    nombre: nombre.toUpperCase(),
-  };
+  reservaActual.profesional = { nombre: nombre.toUpperCase() };
   renderizar();
 }
 
@@ -76,19 +63,39 @@ function actualizarFechaHora(fecha, hora) {
 }
 
 function confirmarReserva() {
-  const registrarReservas = JSON.parse(localStorage.getItem("reservas")) || [];
-  registrarReservas.push(reservaActual);
-  localStorage.setItem("reservas", JSON.stringify(registrarReservas));
-  
+  const servicio = JSON.parse(localStorage.getItem('servicioSeleccionado'));
+
+  const nuevaReserva = {
+    servicio: {
+      nombre: servicio?.nombre?.toUpperCase() || reservaActual.servicio.nombre,
+      precio: servicio?.precio || reservaActual.servicio.precio
+    },
+    profesional: reservaActual.profesional,
+    fecha: reservaActual.fecha,
+    hora: reservaActual.hora
+  };
+
+  const reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+
+  // Genera id automático
+  const maxId = reservas.length > 0 ? Math.max(...reservas.map(r => r.id || 0)) : 0;
+  nuevaReserva.id = maxId + 1;
+
+  reservas.push(nuevaReserva);
+  localStorage.setItem("reservas", JSON.stringify(reservas));
+
+  // Limpia el servicio seleccionado
+  localStorage.removeItem('servicioSeleccionado');
+
   alert(
     `RESERVA CONFIRMADA\n\n` +
-      `${reservaActual.servicio.nombre}\n` +
-      `${reservaActual.profesional.nombre}\n` +
-      `${reservaActual.fecha} / ${reservaActual.hora}\n` +
-      `${formatearPrecio(calcularTotal())}`,
+    `${nuevaReserva.servicio.nombre}\n` +
+    `${nuevaReserva.profesional.nombre}\n` +
+    `${nuevaReserva.fecha} / ${nuevaReserva.hora}\n` +
+    `${formatearPrecio(nuevaReserva.servicio.precio)}`
   );
 
-  return reservaActual;
+  return nuevaReserva;
 }
 
 window.ConfirmacionServicio = {

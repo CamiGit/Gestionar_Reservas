@@ -1,106 +1,106 @@
-// Importa la función que inicializa los eventos del formulario
+import { productos } from "../../catalogoServicios/catalogoServicios.js";
 import { initFormulario } from "../../../components/forms/creacionServicios/formCreacionServicios.js";
-// Importa los productos iniciales hardcodeados como respaldo si el localStorage esta vacio
-import productos from "../../catalogoServicios/catalogoServicios.js";
 
-// Carga el HTML del formulario dentro del modal y luego inicializa sus eventos
-fetch("/components/forms/creacionServicios/formCreacionServicios.html")
-  .then((res) => res.text())
-  .then((html) => {
-    document.getElementById("form-services").innerHTML = html;
-    initFormulario();
-  })
-  .catch((err) => console.error("Error cargando el formulario:", err));
-
-// Carga el HTML del navbar admin
-fetch("/components/navbarAdmin/navbar_Admin.html")
-  .then((res) => res.text())
-  .then((html) => {
-    document.getElementById("navbarAdmin-placeholder").innerHTML = html;
-    initNavbarAdmin();
-  })
-  .catch((err) => console.error("Error cargando el navbar admin:", err));
-
-// Guarda el indice del servicio que va a eliminar
+const KEY = "Lista de Servicios";
 let indexAEliminar = null;
 
-// Llave del localStorage
-const KEY = "Lista de Servicios";
+export function renderizarTabla() {
+  const servicios = JSON.parse(localStorage.getItem(KEY)) || [];
+  const tbody = document.getElementById("tabla-servicios");
+  if (!tbody) return;
+  tbody.innerHTML = "";
 
-// Lee la lista del localStorage, si esta vacia carga los 10 productos iniciales
-const servicios = JSON.parse(localStorage.getItem(KEY)) || [];
-if (servicios.length == 0) {
-  productos.forEach(function (elemento) {
-    servicios.push(elemento);
+  servicios.forEach((servicio, index) => {
+    const estadoClase = servicio.status === true || servicio.status === "true" ? "confirmada" : "cancelada";
+    const estadoTexto = servicio.status === true || servicio.status === "true" ? "Activo" : "Inactivo";
+    const id = servicio.id ?? index + 1;
+
+    const fila = `
+      <tr>
+        <td>#ID-${id}</td>
+        <td>${servicio.nombre}</td>
+        <td>
+          <div class="text-truncate">${servicio.descripcion}</div>
+        </td>
+        <td>
+          <span class="badge-estado ${estadoClase}">${estadoTexto}</span>
+        </td>
+        <td class="celda-acciones">
+          <button class="btn-accion btn-editar" data-index="${index}" title="Editar">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button class="btn-accion btn-eliminar" data-index="${index}" title="Eliminar">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+    tbody.innerHTML += fila;
   });
-  localStorage.setItem(KEY, JSON.stringify(servicios));
 }
-console.log("Lista: ", servicios);
 
-// Renderiza cada servicio como una fila en la tabla
-const tbody = document.getElementById("tabla-servicios");
-tbody.innerHTML = "";
-
-servicios.forEach((servicio, index) => {
-  // Define la clase del segun el estado del sercicio
-  const estadoClase = servicio.status ? "confirmada" : "cancelada";
-
-  const fila = `
-    <tr>
-      <td>#ID-${servicio.id}</td>
-      <td>${servicio.nombre}</td>
-      <td>
-        <div class="text-truncate">
-          ${servicio.descripcion}
-        </div>
-      </td>
-      <td>
-        <span class="badge-estado ${estadoClase}">
-          ${servicio.status}
-        </span>
-      </td>
-      <td class="celda-acciones">
-        <button class="btn-accion" title="Editar">
-          <i class="fa-solid fa-pen"></i>
-        </button>
-        <button class="btn-accion btn-eliminar" data-index="${index}" title="Eliminar">
-          <i class="fa-solid fa-trash"></i>
-        </button>
-      </td>
-    </tr>
-  `;
-
-  tbody.innerHTML += fila;
-});
-
-
-const modalElement = document.getElementById("modalEliminar");
-modalElement.addEventListener("hidden.bs.modal", () => {
-  if (document.activeElement) document.activeElement.blur();
-  document.body.focus();
-});
-
-document.addEventListener("click", function (e) {
-  if (e.target.closest(".btn-eliminar")) {
-    const boton = e.target.closest(".btn-eliminar");
-    indexAEliminar = boton.dataset.index;
-    const modal = new bootstrap.Modal(document.getElementById("modalEliminar"));
-    modal.show();
+export function initListaServicios() {
+  const servicios = JSON.parse(localStorage.getItem(KEY)) || [];
+  if (servicios.length === 0) {
+    productos.forEach((elemento) => servicios.push(elemento));
+    localStorage.setItem(KEY, JSON.stringify(servicios));
   }
-});
 
-document.getElementById("btn-confirmar-eliminar").addEventListener("click", function () {
-  const servicios = JSON.parse(localStorage.getItem(KEY)) || [];
-  servicios.splice(indexAEliminar, 1);
-  localStorage.setItem(KEY, JSON.stringify(servicios));
-  const modal = bootstrap.Modal.getInstance(document.getElementById("modalEliminar"));
-  modal.hide();
-  location.reload();
-});
+  fetch("/components/forms/creacionServicios/formCreacionServicios.html")
+    .then((res) => res.text())
+    .then((html) => {
+      document.getElementById("form-services").innerHTML = html;
+      initFormulario(renderizarTabla);
+    })
+    .catch((err) => console.error("Error cargando el formulario:", err));
 
-function eliminarServicio(index) {
-  const servicios = JSON.parse(localStorage.getItem(KEY)) || [];
-  servicios.splice(index, 1);
-  localStorage.setItem(KEY, JSON.stringify(servicios));
-  location.reload();
+  renderizarTabla();
+
+  const modalElement = document.getElementById("modalEliminar");
+  if (modalElement) {
+    modalElement.addEventListener("hidden.bs.modal", () => {
+      if (document.activeElement) document.activeElement.blur();
+      document.body.focus();
+    });
+  }
+
+  document.addEventListener("click", function (e) {
+    // Botón eliminar
+    const btnEliminar = e.target.closest(".btn-eliminar");
+    if (btnEliminar) {
+      indexAEliminar = btnEliminar.dataset.index;
+      const modal = new bootstrap.Modal(document.getElementById("modalEliminar"));
+      modal.show();
+      return;
+    }
+
+    // Botón editar
+    const btnEditar = e.target.closest(".btn-editar");
+    if (btnEditar) {
+      const index = btnEditar.dataset.index;
+      const lista = JSON.parse(localStorage.getItem(KEY)) || [];
+      const servicio = lista[index];
+
+      document.getElementById("nombre").value = servicio.nombre;
+      document.getElementById("descripcion").value = servicio.descripcion;
+      document.getElementById("precio").value = servicio.precio;
+      document.getElementById("editIndex").value = index;
+      document.querySelector(".btn-enviar").textContent = "Guardar Cambios";
+
+      const modal = new bootstrap.Modal(document.getElementById("exampleModal"));
+      modal.show();
+    }
+  });
+
+  const btnConfirmar = document.getElementById("btn-confirmar-eliminar");
+  if (btnConfirmar) {
+    btnConfirmar.addEventListener("click", function () {
+      const lista = JSON.parse(localStorage.getItem(KEY)) || [];
+      lista.splice(Number(indexAEliminar), 1);
+      localStorage.setItem(KEY, JSON.stringify(lista));
+      const modal = bootstrap.Modal.getInstance(document.getElementById("modalEliminar"));
+      modal.hide();
+      renderizarTabla();
+    });
+  }
 }

@@ -38,7 +38,7 @@ body {
     gap: 20px;
     align-items: stretch;
     width: 100%;
-    height: 450px;
+    height: 500px;
     margin-bottom: 20px;
 }
 
@@ -53,7 +53,7 @@ body {
 
 /* Lista de sedes */
 .sedes-list {
-    flex: 0 0 280px;
+    flex: 0 0 360px;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -79,11 +79,11 @@ body {
 .sede-card {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     background: #ffffff;
     border: 1.5px solid var(--color-secondary);
     border-radius: 10px;
-    padding: 8px;
+    padding: 12px 14px;
     cursor: pointer;
     transition: all 0.25s ease;
     text-align: left;
@@ -103,8 +103,8 @@ body {
 }
 
 .sede-card-img {
-    width: 80px;
-    height: 70px;
+    width: 110px;
+    height: 95px;
     object-fit: cover;
     border-radius: 8px;
     flex-shrink: 0;
@@ -118,18 +118,19 @@ body {
 .sede-card-info h4 {
     font-family: var(--font-family-general);
     color: var(--color-secondary);
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     font-weight: 700;
     margin: 0 0 4px 0;
-    white-space: nowrap;
+    white-space: normal;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.3;
 }
 
 .sede-card-info p {
     font-family: var(--font-family-general);
     color: #444;
-    font-size: 0.75rem;
+    font-size: 0.82rem;
     margin: 0;
     line-height: 1.4;
 }

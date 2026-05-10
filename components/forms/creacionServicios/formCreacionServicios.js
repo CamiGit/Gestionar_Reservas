@@ -1,10 +1,7 @@
-// Importa el array de productos iniciales hardcodeados
 import { productos } from '/pages/catalogoServicios/catalogoServicios.js';
 
-// Lee la lista del localStorage, si no existe inicializa con un array vacio
 let listaDeServicios = JSON.parse(localStorage.getItem("Lista de Servicios")) || [];
 
-// Si el localStorage esta vacio, carga los 10 productos iniciales.
 if (listaDeServicios.length == 0) {
     productos.forEach(function (elemento) {
         listaDeServicios.push(elemento);
@@ -12,24 +9,20 @@ if (listaDeServicios.length == 0) {
     localStorage.setItem("Lista de Servicios", JSON.stringify(listaDeServicios));
 }
 
-// Verifica que ningun campo esre vacío
 function validar(valor) {
     return valor.trim() !== "";
 }
 
-// Muestra un mensaje de error debajo del campo correspondiente
 function mostrarError(errorId, mensaje) {
     const errorSpan = document.getElementById(errorId);
     if (errorSpan) errorSpan.textContent = mensaje;
 }
 
-// Limpia el mensaje de erro
 function limpiarError(errorId) {
     const errorSpan = document.getElementById(errorId);
     if (errorSpan) errorSpan.textContent = '';
 }
 
-// Valida toedos los campos del formulario antes de enviar
 function validarFormulario(nombre, descripcion, precio) {
     let esValido = true;
 
@@ -51,18 +44,13 @@ function validarFormulario(nombre, descripcion, precio) {
     return esValido;
 }
 
-// Se exporta para llamarla desde listaServicios.js despues de que el HTML
-// del formulario haya cargado
-export function initFormulario() {
+export function initFormulario(onServicioGuardado) {
     let imagenURL = "";
 
-    // Referencia a los elementos del dom del formulario.
     const botonEnviar = document.querySelector(".btn-enviar");
     const inputImagen = document.getElementById('inputImagen');
-    const preview     = document.getElementById('preview');
+    const preview = document.getElementById('preview');
 
-    // Cuando el usuario selecciona una imagen, la sube a Claudinary
-    // y guarda la URL publica para usarla al crear el servicio
     inputImagen.addEventListener("change", async function () {
         const archivo = this.files[0];
         if (!archivo) return;
@@ -85,36 +73,59 @@ export function initFormulario() {
         }
     });
 
-    // Se ejecuta cuando el usuario da click en el boton crear servicio
     botonEnviar.addEventListener("click", function (event) {
         event.preventDefault();
 
-        // Recoge los valores de cada campo del formulario
         const nombre      = document.querySelector("#nombre").value;
         const descripcion = document.querySelector("#descripcion").value;
         const precio      = document.querySelector("#precio").value;
         const statusEl    = document.querySelector('input[name="status"]:checked');
         const status      = statusEl ? statusEl.value : "true";
+        const editIndex   = document.getElementById("editIndex").value;
+        const esEdicion   = editIndex !== "";
 
-        // Valida los campos antes de continuar
         const esValido = validarFormulario(nombre, descripcion, precio);
 
         if (esValido) {
-            // Construye el objeto servicio con los datos del formulario
-            const servicio = { nombre, descripcion, precio, status, imagen: imagenURL };
-            // Verifica que no exista un servicio con el mismo nombre
-            const existe   = listaDeServicios.some(e => e.nombre === servicio.nombre);
+            const listaActual = JSON.parse(localStorage.getItem("Lista de Servicios")) || [];
 
-            if (!existe) {
-                listaDeServicios.push(servicio); // Agrega un nuevo servicio a la lista
-                localStorage.setItem("Lista de Servicios", JSON.stringify(listaDeServicios));
-                alert("Servicio Agregado");
-                location.reload(); // recarga la pagina para actualizar la tabla
+            if (esEdicion) {
+                listaActual[editIndex] = {
+                    ...listaActual[editIndex],
+                    nombre,
+                    descripcion,
+                    precio,
+                    status,
+                    imagen: imagenURL || listaActual[editIndex].imagen
+                };
+                localStorage.setItem("Lista de Servicios", JSON.stringify(listaActual));
+                alert("Servicio Actualizado");
+
+                const modal = bootstrap.Modal.getInstance(document.getElementById("exampleModal"));
+                if (modal) modal.hide();
+                if (onServicioGuardado) onServicioGuardado();
             } else {
-                alert("El Servicio ya Existe");
+                const existe = listaActual.some(e => e.nombre === nombre);
+
+                if (!existe) {
+                    const maxId = listaActual.length > 0
+                        ? Math.max(...listaActual.map(s => s.id || 0))
+                        : 0;
+                    const servicio = { id: maxId + 1, nombre, descripcion, precio, status, imagen: imagenURL };
+                    listaActual.push(servicio);
+                    localStorage.setItem("Lista de Servicios", JSON.stringify(listaActual));
+                    alert("Servicio Agregado");
+
+                    const modal = bootstrap.Modal.getInstance(document.getElementById("exampleModal"));
+                    if (modal) modal.hide();
+                    if (onServicioGuardado) onServicioGuardado();
+                } else {
+                    alert("El Servicio ya Existe");
+                }
             }
 
-            // Limpia el formulario y oculta el preview de la imagen
+            document.getElementById("editIndex").value = "";
+            document.querySelector(".btn-enviar").textContent = "Crear Servicio";
             document.getElementById("formCreacionServicios").reset();
             preview.style.display = "none";
             imagenURL = "";
