@@ -123,6 +123,27 @@ h1, h2, h3,h4,h5,h6 {
 .navbar-nav .nav-link.active, .nav-link.show{
     color: var(--color-secundario)!important;
 }
+
+.btn-acceder{
+
+    width: 100%;
+    display: block;
+    font-size: 18px;
+    background: var(--color-secundario);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+    margin: 0 auto;
+}
+
+.btn-acceder:hover {
+    background: var(--color-primario);
+    color: #fff;
+    border: 1px solid #f8f8f8;
+}
+
 @media (max-width: 576px) {
     .navbar-toggler{
         margin-right: 15px;

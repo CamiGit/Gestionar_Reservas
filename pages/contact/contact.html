@@ -10,39 +10,41 @@
   <link rel="stylesheet" href="/components/footer/footer.css">
   <link rel="stylesheet" href="/components/navbar/navbar.css">
   <link rel="stylesheet" href="contact.css" />
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/components//forms/contacto/formContacto.css">
 </head>
 
 <body>
   
   <header id="header" class="sticky-top"></header>
-  <main class="container py-5 container-main">
-    <div class="card">
+  <main class="container-custom py-5">
+    <div class=" card h-60vh">
       <div class="card-body content-body">
         <div class="row">
           <div class="col-md-6">
-            <div class="carousel slide" data-bs-ride="carousel" data-bs-interval="2000" data-bs-pause="hover">
+            <div class="carousel slide" data-bs-ride="carousel" data-bs-interval="2500"  data-bs-pause="hover">
               <div class="carousel-inner">
                 <div class="carousel-item active">
                   <img src="https://i.pinimg.com/1200x/ce/4e/08/ce4e08428382942df4c291b100abac6e.jpg"
                     class="d-block w-100" alt="..." />
                   <div class="carousel-caption">
-                    <h5>Resalta tu belleza natural</h5>
-                    <p>Cuidamos cada detalle para que luzcas increíble.</p>
+                    <h4>Resalta tu belleza natural</h4>
+                    <p >Cuidamos cada detalle para que luzcas increíble.</p>
                   </div>
                 </div>
                 <div class="carousel-item">
                   <img src="https://i.pinimg.com/736x/24/d3/4a/24d34a0347d21010fa30e1beeb6e2fb9.jpg"
                     class="d-block w-100" alt="..." />
                   <div class="carousel-caption">
-                    <h5>Expertos en tu estilo</h5>
+                    <h4>Expertos en tu estilo</h4>
                     <p>Manos profesionales que transforman tu look.</p>
                   </div>
                 </div>
                 <div class="carousel-item">
                   <img src="https://i.pinimg.com/736x/13/d9/c9/13d9c9557c20368b767a7675b6e5ade3.jpg"
-                    class="d-block w-100" alt="..." />
+                    class="d-block w-100"  alt="..." />
                   <div class="carousel-caption">
-                    <h5>Tu cabello, nuestra pasión</h5>
+                    <h4>Tu cabello, nuestra pasión</h4>
                     <p>Productos de calidad y resultados que enamoran.</p>
                   </div>
                 </div>
@@ -50,7 +52,7 @@
             </div>
           </div>
           <div class="col-md-6">
-            <iframe src="../../components/forms/contacto/formContacto.html" class="form-iframe"></iframe>
+            <div id="form-contacto"></div>
           </div>
         </div>
       </div>
@@ -65,7 +67,7 @@
   <!-- 1. Google Maps SIN callback -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCkVMtIfvyL6zRCUFZbK2LgDZntKlGDOjg&loading=async"
     defer></script>
-  <!-- 2. Tu JS del mapa, después de Google Maps -->
+  <!-- 2. JS del mapa, después de Google Maps -->
   <script src="/components/maps/maps.js" defer></script>
   <!-- 3. Bootstrap -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"

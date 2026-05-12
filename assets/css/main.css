@@ -18,3 +18,12 @@ h2 {
     letter-spacing: 1px;
 }
 
+.container-custom {
+  width: 100%;
+  max-width: 100%; 
+  padding-left: 4rem;
+  padding-right: 4rem;
+}  
+
+
+

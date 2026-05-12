@@ -1,3 +1,10 @@
+:root {
+  --color-primary: #522676;
+  --color-secondary: #AE8D3E;
+  --font-family-title: 'Playfair Display', serif;
+  --font-family-general: 'Montserrat', sans-serif;
+}
+
 body {
     font-family: 'Montserrat', sans-serif;
     background-color: #f9f9f9;
@@ -16,28 +23,19 @@ h6 {
 
 .titulo-seccion {
     font-family: 'Playfair Display', serif;
-    color: #522676;
+    color: var(--color-primary);
     font-size: 2.5rem;
 }
 
-:root {
-  --color-primary: #522676;
-  --color-secondary: #AE8D3E;
-  --font-family-title: 'Playfair Display', serif;
-  --font-family-general: 'Montserrat', sans-serif;
-}
-
-/* CONTENEDOR */
 .flip-card {
   perspective: 1000px;
-  width: 100%;
-  height: 380px;
-  outline: none; /* evita borde al hacer focus */
-  border: 1px solid var(--color-secondary, #AE8D3E);
+  width: 90%;
+  height: 520px;
+  outline: none; 
+  border: 1px solid var(--color-secondary);
     border-radius: 18px;
 }
 
-/* INNER */
 .flip-card-inner {
   width: 100%;
   height: 100%;
@@ -46,7 +44,6 @@ h6 {
   transition: transform 0.7s cubic-bezier(.4,2,.3,1);
 }
 
-/* 🔥 ACTIVACIÓN CORRECTA (HOVER + FOCUS) */
 .flip-card:hover .flip-card-inner {
   transform: rotateY(180deg);
 }
@@ -81,12 +78,10 @@ h6 {
   backface-visibility: hidden;
 }
 
-/* FRONT */
 .flip-card-front {
   background: #000;
 }
 
-/* BACK */
 .flip-card-back {
   background: linear-gradient(135deg, var(--color-primary), #2e1742);
   transform: rotateY(180deg);
@@ -94,10 +89,9 @@ h6 {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2; /* 🔥 importante para clicks */
+  z-index: 2; 
 }
 
-/* IMAGEN FULL */
 .img-container {
   position: absolute;
   inset: 0;
@@ -110,7 +104,6 @@ h6 {
   object-fit: cover;
 }
 
-/* OVERLAY */
 .img-container::before {
   content: "";
   position: absolute;
@@ -122,10 +115,10 @@ h6 {
     transparent
   );
   z-index: 2;
-  pointer-events: none; /* 🔥 clave */
+  pointer-events: none;
 }
 
-/* BORDE DORADO */
+
 .flip-card-front::after,
 .flip-card-back::after {
   content: "";
@@ -133,10 +126,10 @@ h6 {
   inset: 0;
   border: 2px solid var(--color-secondary);
   border-radius: 18px;
-  pointer-events: none; /* 🔥 clave */
+  pointer-events: none; 
 }
 
-/* TEXTO SOBRE IMAGEN */
+
 .flip-card-front .card-body {
   position: absolute;
   bottom: 0;
@@ -154,7 +147,6 @@ h6 {
   backdrop-filter: blur(5px);
 }
 
-/* TITULO */
 .card-title {
   font-family: var(--font-family-title);
   font-size: 1.2rem;
@@ -179,16 +171,16 @@ h6 {
   color: #000;
 }
 
-/* DESCRIPCIÓN */
+
 .descripcion {
   font-family: var(--font-family-general);
-  font-size: 0.95rem;
+  font-size: 1.2  rem;
   line-height: 1.5;
   color: #f1f1f1;
   padding: 10px;
 }
 
-/* BOTONES */
+
 .btn-linkedin,
 .btn-github {
   border-radius: 25px;
@@ -262,7 +254,7 @@ h6 {
   padding: 25px;
 }
 
-/* BORDE DORADO */
+
 .mv-overlay::after {
   content: "";
   position: absolute;
@@ -272,14 +264,13 @@ h6 {
   pointer-events: none;
 }
 
-/* TITULO CARD */
+
 .mv-overlay h3 {
   font-family: var(--font-family-title);
   color: var(--color-secondary);
   margin-bottom: 10px;
 }
 
-/* TEXTO */
 .mv-overlay p {
   font-family: var(--font-family-general);
   color: #f1f1f1;

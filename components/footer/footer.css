@@ -11,6 +11,10 @@
     border-top: 1px solid #B5ADAD;
 }
 
+.footer p{
+     font-size: 15px;
+}
+
 .footer-content {
     display: flex;
     justify-content: space-around;
@@ -40,6 +44,7 @@
     display: flex;
     gap: 15px;
     margin-top: 15px;
+    justify-content: center;
 }
 
 .social-links a {

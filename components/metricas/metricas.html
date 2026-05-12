@@ -1,0 +1,67 @@
+ <div class="header">
+        <h1>Panel de Reservas</h1>
+        <div class="filtros">
+            <button class="activo" onclick="cambiarRango('7d', this)">7 días</button>
+            <button onclick="cambiarRango('30d', this)">30 días</button>
+            <button onclick="cambiarRango('90d', this)">90 días</button>
+        </div>
+    </div>
+
+    <!-- Métricas -->
+    <div class="metricas">
+        <div class="tarjeta">
+            <p>Ingresos</p>
+            <h2 id="m-ingresos">$2.600.000</h2>
+            <span class="verde" id="d-ingresos">+15.4%</span>
+        </div>
+        <div class="tarjeta">
+            <p>Reservas</p>
+            <h2 id="m-reservas">94</h2>
+            <span class="verde" id="d-reservas">+12.1%</span>
+        </div>
+        <div class="tarjeta">
+            <p>Clientes</p>
+            <h2 id="m-clientes">61</h2>
+            <span class="verde" id="d-clientes">+8.3%</span>
+        </div>
+        <div class="tarjeta">
+            <p>Canceladas</p>
+            <h2 id="m-canceladas">4.3%</h2>
+            <span class="rojo" id="d-canceladas">-0.5%</span>
+        </div>
+    </div>
+
+    <!-- Gráfico -->
+    <div class="grafico">
+        <p>Ingresos vs Reservas</p>
+        <div class="leyenda">
+            <div class="leyenda-item">
+                <div class="leyenda-color" style="background: #522676;"></div>
+                Ingresos
+            </div>
+            <div class="leyenda-item">
+                <div class="leyenda-color" style="background: #AE8D3E;"></div>
+                Reservas
+            </div>
+        </div>
+        <div style="position: relative; height: 250px;">
+            <canvas id="grafico-principal"></canvas>
+        </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="tabla-contenedor">
+        <div class="tabla-header">Servicios destacados</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Servicio</th>
+                    <th>Reservas</th>
+                    <th>Ingresos</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-body"></tbody>
+        </table>
+    </div>
+

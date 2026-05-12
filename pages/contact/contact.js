@@ -22,6 +22,12 @@ fetch('../../components/maps/maps.html')
     }, 100);
 });
 
+fetch('../../components/forms/contacto/formContacto.html')
+    .then(res => res.text())
+    .then(html => {
+    document.getElementById('form-contacto').innerHTML = html;
+});
+
 fetch('../../components/footer/footer.html')
     .then(res => res.text())
     .then(html => {

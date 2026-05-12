@@ -1,22 +1,51 @@
+<div class="d-flex">
+
+  <aside id="sidebar" class="sidebar d-flex flex-column collapsed">
+
+    <div>
+      <div class="sidebar-header">
+        <h4 class="logo-text">Admin</h4>
+        <button id="toggleBtn" class="btn-toggle">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+
+      <ul class="nav flex-column mt-4">
+
+        <li>
+          <a class="nav-link active" data-page="/components/metricas/metricas.html">
+            <i class="fas fa-home"></i>
+            <span class="link-text">Inicio</span>
+          </a>
+        </li>
+
+        <li>
+          <a class="nav-link" data-page="/pages/admin/listaServicios/listaServicios.html">
+            <i class="fas fa-scissors"></i>
+            <span class="link-text">Servicios</span>
+          </a>
+        </li>
+
+        <li>
+          <a class="nav-link" data-page="/pages/admin/listaReservas/listaReservas.html">
+            <i class="fas fa-calendar-check"></i>
+            <span class="link-text">Reservas</span>
+          </a>
+        </li>
+
+      </ul>
+    </div>
 
 
-<!-- Botón hamburguesa independiente -->
-<button class="boton-hamburguesa" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuLateral" aria-controls="menuLateral">
-  ☰
-</button>
+    <div class="mt-auto mb-3">
+      <a class="nav-link logout">
+        <i class="fas fa-right-from-bracket"></i>
+        <span class="link-text">Salir</span>
+      </a>
+    </div>
 
-<!-- Menú lateral oculto -->
-<div class="offcanvas offcanvas-start menu-lateral" tabindex="-1" id="menuLateral" aria-labelledby="menuTitulo">
-  <div class="offcanvas-header">
-  <img src="/assets/images/logo_fondo_transparente.png" alt="Logo" class="logo-menu">
+  </aside>
 
-  </div>
-  <div class="offcanvas-body">
-    <ul class="lista-menu">
-      <li><a class="boton-menu" href="/pages/admin/panelDeControl/panelControl.html">Panel</a></li>
-      <li><a class="boton-menu" href="/pages/admin/listaServicios/listaServicios.html">Servicios</a></li>
-      <li><a class="boton-menu" href="/pages/admin/listaReservas/listaReservas.html">Reservas</a></li>
-    </ul>
-  </div>
-  <li><a class="boton-menu" href="/index.html">Salir vista Admin</a></li>
+  <main id="content" class="content p-4 w-100"></main>
+
 </div>

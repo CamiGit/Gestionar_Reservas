@@ -1,14 +1,18 @@
-function initNavbarAdmin() {
-    const boton = document.querySelector('.boton-hamburguesa');
-    const menu = document.querySelector('#menuLateral');
+export function initNavbarAdmin() {
+  const btnToggle = document.querySelector("#toggleBtn");
+  const sidebar = document.querySelector("#sidebar");
 
-    boton.addEventListener('mouseenter', () => {
-        const bsOffcanvas = new bootstrap.Offcanvas(menu);
-        bsOffcanvas.show();
+  if (btnToggle && sidebar) {
+    btnToggle.addEventListener("click", () => {
+      sidebar.classList.toggle("collapsed");
     });
+  }
 
-    menu.addEventListener('mouseleave', () => {
-        const bsOffcanvas = new bootstrap.Offcanvas(menu);
-        bsOffcanvas.hide();
+  const links = document.querySelectorAll(".nav-link");
+  links.forEach(link => {
+    link.addEventListener("click", function () {
+      links.forEach(l => l.classList.remove("active"));
+      this.classList.add("active");
     });
+  });
 }
