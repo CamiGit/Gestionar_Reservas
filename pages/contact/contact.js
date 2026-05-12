@@ -21,6 +21,7 @@ fetch('../../components/maps/maps.html')
         inicializacionMap();
     }, 100);
 });
+
 fetch('../../components/forms/contacto/formContacto.html')
     .then(res => res.text())
     .then(html => {
