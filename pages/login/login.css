@@ -1,3 +1,9 @@
+:root {
+    --color-primary: #522676;
+    --color-secondary: #AE8D3E;
+    --font-family-general: 'Montserrat', sans-serif;
+}
+
 .container-main {
     width: 95%;
     max-width: 1400px;
