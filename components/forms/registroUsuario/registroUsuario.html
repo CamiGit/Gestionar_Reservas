@@ -24,12 +24,14 @@
             <div class="input-group">
                 <input type="email" id="email" name="email" required placeholder="">
                 <label>Correo electrónico</label>
+                <small class="helper-text">Ejemplo: usuario@dominio.com</small>
                 <span class="error" id="errorEmail"></span>
             </div>
 
             <div class="input-group">
                 <input type="tel" id="telefono" name="telefono" required placeholder="">
                 <label>Teléfono</label>
+                <small class="helper-text">Ejemplo: 3229088520 (mínimo 7 dígitos)</small>
                 <span class="error" id="errorTelefono"></span>
             </div>
 
@@ -37,6 +39,13 @@
                 <input type="password" id="password" name="password" required placeholder="">
                 <label>Contraseña</label>
                 <span class="error" id="errorPassword"></span>
+                <div class="requisitos-password" id="requisitosPassword">
+                    <p class="requisito" id="req-longitud">✗ Mínimo 8 caracteres</p>
+                    <p class="requisito" id="req-mayuscula">✗ Al menos una letra mayúscula</p>
+                    <p class="requisito" id="req-minuscula">✗ Al menos una letra minúscula</p>
+                    <p class="requisito" id="req-numero">✗ Al menos un número</p>
+                    <p class="requisito" id="req-especial">✗ Al menos un carácter especial (@, #, $, %, *, !, ?, -, _)</p>
+                </div>
             </div>
 
             <div class="input-group">
