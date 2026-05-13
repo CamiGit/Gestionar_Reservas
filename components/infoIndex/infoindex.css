@@ -5,12 +5,12 @@
     --font-family-general: 'Montserrat', sans-serif;
 }
 
-.text-content{
+.text-content {
     border: solid var(--color-secondary) 2px;
     background-color:#f0e1c0;
 }
 
-.card-title{
+.card-title {
     color: var(--color-primary);
     font-family: var(--font-family-title);
     font-size: 3rem;
@@ -46,6 +46,10 @@
     padding-bottom: 20px;
     text-align: center;
 }
+
+
+
+/* ==== APARTADO RESPONSIVE ==== */
 @media(min-width:768px){
     .card-title{
         font-size: 2.5rem;
@@ -53,4 +57,15 @@
     .profesionalismo{
         font-size: 2.2rem;
     }
+}
+
+@media screen and (max-width: 550px) {
+    .card-title{
+        font-size: 1.5rem;
+    }
+
+    .card-mobile {
+        font-size: 1.1rem;
+    }
+
 }
