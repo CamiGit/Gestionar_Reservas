@@ -32,12 +32,18 @@ function initSidebar() {
     });
   });
 
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
-      const salir = confirm("¿Quieres salir del panel administrador?");
-      if (salir) window.location.href = "/index.html";
+
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", () => {
+    const modalSalir = new bootstrap.Modal(document.getElementById("modalSalir"));
+    modalSalir.show();
+
+    const btnSalirConfirmado = document.getElementById("btnSalirConfirmado");
+    btnSalirConfirmado.addEventListener("click", () => {
+      window.location.href = "/index.html";
     });
-  }
+  });
+}
 
   function loadPage(page) {
     fetch(page)

@@ -110,7 +110,7 @@
                   <span class="total-valor" id="confTotal">$50.000</span>
                 </div>
                 <button class="btn-confirmar" id="btnConfirmarReserva">
-                  CONFIRMAR RESERVA
+                  CONFIRMADO
                 </button>
               </div>
             </div>
@@ -129,5 +129,20 @@
   <script src="/components/confirmacionServicio/confirmacionServicio.js"></script>
   <script src="reservations.js"></script>
 </body>
+
+<!-- Modal -->
+<div class="modal fade" id="modalConfirmacionReserva" tabindex="-1" aria-labelledby="modalConfirmacionLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" id="mensajeConfirmacion"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 </html>

@@ -87,13 +87,29 @@ function confirmarReserva() {
   // Limpia el servicio seleccionado
   localStorage.removeItem('servicioSeleccionado');
 
-  alert(
-    `RESERVA CONFIRMADA\n\n` +
-    `${nuevaReserva.servicio.nombre}\n` +
-    `${nuevaReserva.profesional.nombre}\n` +
-    `${nuevaReserva.fecha} / ${nuevaReserva.hora}\n` +
-    `${formatearPrecio(nuevaReserva.servicio.precio)}`
-  );
+   // Mostrar modal con los mismos datos que la alerta original
+const mensaje = `
+  <strong style="color:#28a745;">RESERVA CONFIRMADA</strong><br><br>
+  ${nuevaReserva.servicio.nombre}<br>
+  ${nuevaReserva.profesional.nombre}<br>
+  ${nuevaReserva.fecha} / ${nuevaReserva.hora}<br>
+  ${formatearPrecio(nuevaReserva.servicio.precio)}
+`;
+
+document.getElementById("mensajeConfirmacion").innerHTML = mensaje;
+
+// Mostrar el modal confirmado
+const modalConfirmacion = new bootstrap.Modal(document.getElementById("modalConfirmacionReserva"));
+modalConfirmacion.show();
+
+// Cuando se cierre el modal desaparece el boton 
+document.getElementById("modalConfirmacionReserva")
+  .addEventListener("hidden.bs.modal", () => {
+    const btnConfirmar = document.getElementById("btnConfirmarReserva");
+    if (btnConfirmar) {
+      btnConfirmar.style.display = "none"; // 
+    }
+  });
 
   return nuevaReserva;
 }
