@@ -95,7 +95,9 @@ h1, h2, h3, h4, h5, h6 {
 .nav-link:hover, .nav-link:focus{
     color: var(--color-secondary);
 }
-
+.nav-link.active{
+    border-bottom: 2px solid var(--color-secondary);
+}
 /* ============================================
    BOTÓN DE ACCESO (INICIAR SESIÓN)
 ============================================ */

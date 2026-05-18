@@ -116,3 +116,13 @@ body {
     font-weight: bold;
     font-family: 'Montserrat', sans-serif;
 }
+@media(max-width:530px){
+    .btn-enviar{
+        width: auto;
+    }
+    .form-container{
+        width: 100%;
+        margin: 0;
+        padding: 0 10px;
+    }
+}

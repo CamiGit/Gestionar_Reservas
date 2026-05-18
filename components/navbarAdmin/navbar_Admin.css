@@ -81,4 +81,9 @@
 .link-text {
   white-space: nowrap;
 }
-
+@media(max-width:480px){
+  .content{
+    padding-left:1px !important;
+    padding-right: 0px !important;
+  }
+}

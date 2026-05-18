@@ -59,7 +59,7 @@
 /* ===== TABLA ESTILO SERVICIOS DESTACADOS ===== */
 .tabla-lista-reservas {
     width: 100%;
-    min-width: 640px;
+    /* min-width: 640px; */
     margin-bottom: 0;
     border-collapse: collapse;
 }
@@ -166,16 +166,22 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+    .container{
+        padding-left: 0;
+        padding-right: 0;
+    }
     .admin-lista-reservas-main {
         padding: 30px 15px 50px;
     }
 
     .admin-lista-reservas-panel {
-        padding: 20px;
+        padding: 20px 10px;
+        width: 100%;
     }
 
     .cabecera-lista-reservas h2 {
         font-size: 1rem;
+        padding-left: 10px;
     }
 
     .tabla-lista-reservas th,
@@ -200,5 +206,21 @@
     .badge-estado {
         padding: 0.2rem 0.5rem;
         font-size: 0.58rem;
+    }
+   
+}
+@media(max-width:480px){
+    .admin-lista-reservas-panel {
+        padding: 0;
+        
+    }
+    .tabla-lista-reservas thead tr th {
+        width: auto !important;
+    }
+    .tabla-lista-reservas tbody tr td.celda-acciones{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
     }
 }
