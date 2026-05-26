@@ -16,7 +16,7 @@ export function renderizarTablaReservas() {
         const fila = `
             <tr>
                 <td>#ID-${String(reserva.id).padStart(2, '0')}</td>
-                <td>${reserva.cliente ?? "—"}</td>
+                <td>${reserva.cliente ? reserva.cliente.toUpperCase() : "—"}</td>
                 <td>${reserva.profesional?.nombre ?? "—"}</td>
                 <td>${reserva.servicio?.nombre ?? "—"}</td>
                 <td>${reserva.fecha ?? "—"}</td>

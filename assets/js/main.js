@@ -111,7 +111,7 @@ fetch('components/infoIndex/infoIndex.html')
     .catch(err => console.error('Error cargando el información index:', err));
 
 // Cargar sección de servicios destacados
-fetch('/components/Servicios Destacados/ServiciosDestacados.html')
+fetch('/components/ServiciosDestacados/ServiciosDestacados.html')
     .then(res => res.text())
     .then(html => {
         document.getElementById('serviceDes-placeholder').innerHTML = html;
