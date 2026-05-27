@@ -42,6 +42,28 @@ fetch('/components/navbar/navbar.html')
     })
     .catch(err => console.error('Error cargando el navbar:', err));
 
+window.addEventListener('message', function (e) {
+    if (e.data && e.data.iframeHeight) {
+        const iframe = document.querySelector('.form-iframe');
+        if (iframe) iframe.style.height = e.data.iframeHeight + 'px';
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const iframe = document.querySelector('.form-iframe');
+    if (!iframe) return;
+    iframe.addEventListener('load', function () {
+        try {
+            const body = iframe.contentDocument.body;
+            const ajustar = function () {
+                iframe.style.height = body.scrollHeight + 'px';
+            };
+            ajustar();
+            new ResizeObserver(ajustar).observe(body);
+        } catch (e) {}
+    });
+});
+
 // Cargar footer
 fetch('/components/footer/footer.html')
     .then(res => res.text())

@@ -62,13 +62,29 @@ function validarRequisitosPassword() {
  */
 document.addEventListener("DOMContentLoaded", function () {
   const form = document.getElementById("formRegistro");
+  if (!form) return;
+
+  function notificarAltura() {
+    window.parent.postMessage({ iframeHeight: document.body.scrollHeight }, "*");
+  }
+  new ResizeObserver(notificarAltura).observe(document.body);
+  notificarAltura();
+
   const passwordInput = document.getElementById("password");
 
   if (passwordInput) {
     passwordInput.addEventListener("input", validarRequisitosPassword);
   }
 
-  mostrarUsuariosEnConsola();
+  document.querySelectorAll(".toggle-password").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      const input = document.getElementById(btn.dataset.target);
+      const isPassword = input.type === "password";
+      input.type = isPassword ? "text" : "password";
+      btn.querySelector(".icon-eye").style.display = isPassword ? "none" : "";
+      btn.querySelector(".icon-eye-off").style.display = isPassword ? "" : "none";
+    });
+  });
 
   form.addEventListener("submit", async function (event) {
     event.preventDefault();
@@ -150,21 +166,22 @@ document.addEventListener("DOMContentLoaded", function () {
         rol: "CLIENTE",
       };
 
-      const guardado = await guardarUsuario(usuario);
-      console.log("Usuario GUARDADO", guardado);
-      
-      mostrarUsuariosEnConsola();
+      try {
+        await guardarUsuario(usuario);
+        mostrarUsuariosEnConsola();
 
-      const mensajeExito = document.getElementById("mensajeExito");
-      mensajeExito.style.display = "block";
-
-      if (guardado) {
+        const mensajeExito = document.getElementById("mensajeExito");
         mensajeExito.style.display = "block";
+
         setTimeout(() => {
           window.parent.location.href = "/pages/login/login.html";
         }, 3000);
-      } else {
-        mostrarError("errorEmail", "El correo ya está registrado");
+      } catch (error) {
+        if (error.message && error.message.toLowerCase().includes("correo")) {
+          mostrarError("errorEmail", "El correo ya está registrado");
+        } else {
+          mostrarError("errorEmail", "El correo ya existe. Intente nuevamente");
+        }
       }
     }
   });
