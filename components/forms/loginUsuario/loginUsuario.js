@@ -44,18 +44,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const datos = await respuesta.json();
 
-            const rol = datos.rol.toLowerCase();
-
-            localStorage.setItem('usuarioLogueado', JSON.stringify({
-                token: datos.token,
-                correo: datos.correo,
-                nombre: datos.nombre,
-                rol: rol,
+            const usuarioLogueado = {
+                token: datos.token ?? datos.accessToken ?? '',
+                correo: datos.correo ?? datos.email ?? datos.usuario?.correo ?? datos.usuario?.email ?? '',
+                nombre: datos.nombre ?? datos.fullName ?? datos.usuario?.nombre ?? '',
+                rol: (datos.rol ?? datos.role ?? 'cliente').toLowerCase(),
                 fechaLogin: new Date().toISOString()
-            }));
+            };
+
+            localStorage.setItem('usuarioLogueado', JSON.stringify(usuarioLogueado));
+
+            const rol = usuarioLogueado.rol;
 
             const mensajeBienvenida = document.getElementById('mensajeBienvenida');
-            mensajeBienvenida.textContent = `¡Bienvenido/a, ${datos.nombre}!`;
+            mensajeBienvenida.textContent = `¡Bienvenido/a, ${usuarioLogueado.nombre || 'usuario'}!`;
             mensajeBienvenida.style.display = 'block';
 
             setTimeout(() => {
