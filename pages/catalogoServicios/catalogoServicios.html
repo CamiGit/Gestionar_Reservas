@@ -20,9 +20,21 @@
     <main class="catalogo-main">
         <div class="container-custom">
             <div class="catalogo-header">
-                <h1>NUESTROS SERVICIOS</h1>
+                <span class="catalogo-eyebrow">Style Factory</span>
+                <h1>Nuestros servicios</h1>
                 <div class="header-line"></div>
-                <p>Descubre los tratamientos y servicios que tenemos para ti</p>
+                <p>Descubre los tratamientos y servicios que tenemos para ti. Reserva en línea en pocos pasos.</p>
+            </div>
+
+            <div class="catalogo-filtros-wrap">
+                <p class="catalogo-filtros-label">Filtrar por categoría</p>
+                <div id="catalogo-filtros" class="catalogo-filtros" role="tablist" aria-label="Filtrar por tipo de servicio"></div>
+            </div>
+
+            <div id="catalogo-vacio" class="catalogo-vacio" style="display: none;">
+                <i class="fa-solid fa-spa" aria-hidden="true"></i>
+                <p>No hay servicios en esta categoría por ahora.</p>
+                <button type="button" class="btn-filtro-todos" id="btn-ver-todos">Ver todos los servicios</button>
             </div>
 
             <div id="cards-container" class="cards-grid"></div>
@@ -36,7 +48,6 @@
 
     <script src="https://kit.fontawesome.com/da49b4fb7a.js" crossorigin="anonymous"></script>
     <script type="module" src="catalogoServicios.js"></script>
-    <script type="module" src="/assets/js/main.js"></script>
 
 </body>
 </html>

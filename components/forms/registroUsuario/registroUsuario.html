@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat&family=Playfair+Display&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="registroUsuario.css">
+    <link rel="stylesheet" href="../passwordToggle.css">
     <title>Registro de usuario</title>
 </head>
 <body>
@@ -16,7 +17,8 @@
         <form id="formRegistro" class="formulario" novalidate>
 
             <div class="input-group">
-                <input type="text" id="nombreCompleto" name="nombreCompleto" required placeholder="">
+                <input type="text" id="nombreCompleto" name="nombreCompleto" required placeholder=""
+                    autocomplete="name" inputmode="text">
                 <label>Nombre completo</label>
                 <span class="error" id="errorNombre"></span>
             </div>
@@ -29,19 +31,27 @@
             </div>
 
             <div class="input-group">
-                <input type="tel" id="telefono" name="telefono" required placeholder="">
+                <input type="tel" id="telefono" name="telefono" required placeholder="" inputmode="tel" autocomplete="tel">
                 <label>Teléfono</label>
-                <small class="helper-text">Ejemplo: 3229088520 (mínimo 7 dígitos)</small>
+                <small class="helper-text">Ejemplo: 3229088520 (7 a 15 dígitos)</small>
                 <span class="error" id="errorTelefono"></span>
             </div>
 
-            <div class="input-group">
-                <input type="password" id="password" name="password" required placeholder="">
-                <label>Contraseña</label>
-                <button type="button" class="toggle-password" data-target="password" aria-label="Mostrar contraseña">
-                    <svg class="icon-eye" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    <svg class="icon-eye-off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                </button>
+            <div class="input-group input-password">
+                <div class="password-field">
+                    <input type="password" id="password" name="password" required placeholder="" autocomplete="new-password">
+                    <label>Contraseña</label>
+                    <button type="button" class="btn-toggle-password" aria-label="Mostrar contraseña" aria-pressed="false">
+                        <svg class="icon-eye" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <svg class="icon-eye-off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                    </button>
+                </div>
                 <span class="error" id="errorPassword"></span>
                 <div class="requisitos-password" id="requisitosPassword">
                     <p class="requisito" id="req-longitud">✗ Mínimo 8 caracteres</p>
@@ -52,31 +62,45 @@
                 </div>
             </div>
 
-            <div class="input-group">
-                <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="">
-                <label>Confirmar contraseña</label>
-                <button type="button" class="toggle-password" data-target="confirmPassword" aria-label="Mostrar contraseña">
-                    <svg class="icon-eye" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    <svg class="icon-eye-off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                </button>
+            <div class="input-group input-password">
+                <div class="password-field">
+                    <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="" autocomplete="new-password">
+                    <label>Confirmar contraseña</label>
+                    <button type="button" class="btn-toggle-password" aria-label="Mostrar contraseña" aria-pressed="false">
+                        <svg class="icon-eye" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <svg class="icon-eye-off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                    </button>
+                </div>
                 <span class="error" id="errorConfirmPassword"></span>
             </div>
+
+            <span class="error" id="errorGeneral"></span>
+
+            <div id="mensajeExito" class="mensaje-exito" style="display: none;" role="status" aria-live="polite">
+                ¡Cuenta registrada con éxito! Redirigiendo al inicio de sesión...
+            </div>
+
+            <div id="mensajeError" class="mensaje-error" style="display: none;" role="alert"></div>
 
             <button type="submit" class="btn-registro">Registrarse</button>
 
             <div class="registro-link">
                 ¿Ya tienes cuenta? <a href="/pages/login/login.html" target="_top">Ingresa aquí</a>
-            </div>            
-                        
-        </form>
+            </div>
 
-        <div id="mensajeExito" class="mensaje-exito" style="display: none;">
-            ¡Registro exitoso!
-        </div>
+        </form>
 
     </section>
 
-    <script src="/assets/js/config.js"></script>
+    <script src="../../../assets/js/config.js"></script>
+    <script src="../../../assets/js/formValidaciones.js"></script>
+    <script src="../passwordToggle.js"></script>
     <script src="registroUsuario.js"></script>
 
 </body>

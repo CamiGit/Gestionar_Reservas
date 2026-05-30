@@ -40,9 +40,12 @@ function cerrarSesion() {
  * Carga el componente del navbar y configura la sesión del usuario
  * Inicializa el botón de cierre de sesión si el usuario está logueado
  */
-fetch('/components/navbar/navbar.html')
-    .then(res => res.text())
-    .then(html => {
+fetch('../../components/navbar/navbar.html')
+    .then(function (res) {
+        if (!res.ok) throw new Error('No se pudo cargar el navbar');
+        return res.text();
+    })
+    .then(function (html) {
         document.getElementById('header').innerHTML = html;
         actualizarNavbar();
         const btnCerrarSesion = document.getElementById('btnCerrarSesion');
@@ -50,7 +53,7 @@ fetch('/components/navbar/navbar.html')
             btnCerrarSesion.addEventListener('click', cerrarSesion);
         }
     })
-    .catch(err => console.error('Error cargando el navbar:', err));
+    .catch(function (err) { console.error('Error cargando el navbar:', err); });
 
 /**
  * Carga el componente del mapa de Google Maps
@@ -79,8 +82,12 @@ fetch('../../components/maps/maps.html')
 fetch('../../components/forms/contacto/formContacto.html')
     .then(res => res.text())
     .then(html => {
-    document.getElementById('form-contacto').innerHTML = html;
-});
+        document.getElementById('form-contacto').innerHTML = html;
+        if (typeof initFormContacto === 'function') {
+            initFormContacto();
+        }
+    })
+    .catch(err => console.error('Error cargando el formulario de contacto:', err));
 
 /**
  * Carga el componente del footer en todas las páginas

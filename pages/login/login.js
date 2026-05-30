@@ -26,13 +26,16 @@ function actualizarNavbar() {
 function cerrarSesion() {
     localStorage.removeItem('usuarioLogueado');
     actualizarNavbar();
-    window.location.href = '/index.html';
+    window.location.href = '../../index.html';
 }
 
 // Cargar navbar y configurar eventos de sesión
-fetch('/components/navbar/navbar.html')
-    .then(res => res.text())
-    .then(html => {
+fetch('../../components/navbar/navbar.html')
+    .then(function (res) {
+        if (!res.ok) throw new Error('No se pudo cargar el navbar');
+        return res.text();
+    })
+    .then(function (html) {
         document.getElementById('header').innerHTML = html;
         actualizarNavbar();
         const btnCerrarSesion = document.getElementById('btnCerrarSesion');
@@ -40,12 +43,32 @@ fetch('/components/navbar/navbar.html')
             btnCerrarSesion.addEventListener('click', cerrarSesion);
         }
     })
-    .catch(err => console.error('Error cargando el navbar:', err));
+    .catch(function (err) { console.error('Error cargando el navbar:', err); });
 
 // Cargar footer
-fetch('/components/footer/footer.html')
-    .then(res => res.text())
-    .then(html => {
+fetch('../../components/footer/footer.html')
+    .then(function (res) {
+        if (!res.ok) throw new Error('No se pudo cargar el footer');
+        return res.text();
+    })
+    .then(function (html) {
         document.getElementById('footer-placeholder').innerHTML = html;
     })
-    .catch(err => console.error('Error cargando el footer:', err));
+    .catch(function (err) { console.error('Error cargando el footer:', err); });
+
+(function mostrarAvisoRegistroExitoso() {
+    var params = new URLSearchParams(window.location.search);
+    var columnaFormulario = document.querySelector('.content-body .col-md-6:last-child');
+    if (!columnaFormulario) return;
+
+    if (params.get('registro') !== 'exito') return;
+    if (document.getElementById('aviso-registro-exito')) return;
+
+    var aviso = document.createElement('div');
+    aviso.id = 'aviso-registro-exito';
+    aviso.className = 'aviso-registro-exito';
+    aviso.setAttribute('role', 'status');
+    aviso.textContent =
+        '¡Cuenta registrada! Ya puede iniciar sesión con su correo y contraseña.';
+    columnaFormulario.insertBefore(aviso, columnaFormulario.firstChild);
+})();

@@ -97,41 +97,9 @@ body {
     color: #dc3545;
 }
 
-/* Botón mostrar/ocultar contraseña */
-.toggle-password {
-    position: absolute;
-    right: 0;
-    top: 4px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px;
-    color: #999;
-    line-height: 0;
-}
-
-.toggle-password:hover {
-    color: #522676;
-}
-
-.toggle-password svg {
-    width: 18px;
-    height: 18px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
-
-#password,
-#confirmPassword {
-    padding-right: 30px;
-}
-
 /* Mensajes de error */
 .error {
-    display: block;
+    display: none;
     color: red;
     font-size: 12px;
     margin-top: 5px;
@@ -159,6 +127,18 @@ body {
     background: #AE8D3E;
     color: white;
     border: 1px solid #AE8D3E;
+}
+
+.mensaje-error {
+    background: #dc3545;
+    color: white;
+    text-align: center;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    font-family: 'Montserrat', sans-serif;
 }
 
 /* Mensaje de éxito */
@@ -192,4 +172,43 @@ body {
 .registro-link a:hover {
     color: #AE8D3E;
     text-decoration: underline;
+}
+
+@media (max-width: 576px) {
+    html {
+        overflow: auto;
+    }
+
+    body {
+        padding: 20px 16px;
+    }
+
+    .form-container {
+        max-width: 100%;
+    }
+
+    .titulo-form {
+        font-size: 1.35rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .input-group {
+        margin-bottom: 1.75rem;
+    }
+
+    .requisitos-password {
+        font-size: 11px;
+        padding: 8px;
+    }
+
+    .btn-registro {
+        width: 100%;
+        max-width: 280px;
+    }
+
+    .mensaje-exito,
+    .mensaje-error {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
 }
