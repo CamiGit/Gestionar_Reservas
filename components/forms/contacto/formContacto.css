@@ -64,7 +64,7 @@ body {
 
 /* ERROR */
 .error {
-    display: block;
+    display: none;
     color: red;
     font-size: 12px;
     margin-top: 5px;

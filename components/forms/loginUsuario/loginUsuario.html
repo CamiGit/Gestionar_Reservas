@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat&family=Playfair+Display&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="loginUsuario.css">
+    <link rel="stylesheet" href="../passwordToggle.css">
     <title>Inicio de sesión</title>
 </head>
 <body>
@@ -13,17 +14,29 @@
 
         <h2 class="titulo-form">Iniciar sesión</h2>
 
-        <form id="formLogin" class="formulario">
+        <form id="formLogin" class="formulario" novalidate>
 
             <div class="input-group">
-                <input type="email" id="email" name="email" required placeholder="">
+                <input type="email" id="email" name="email" required placeholder="" autocomplete="email">
                 <label>Correo electrónico</label>
                 <span class="error" id="errorEmail"></span>
             </div>
 
-            <div class="input-group">
-                <input type="password" id="password" name="password" required placeholder="">
-                <label>Contraseña</label>
+            <div class="input-group input-password">
+                <div class="password-field">
+                    <input type="password" id="password" name="password" required placeholder="" autocomplete="current-password">
+                    <label>Contraseña</label>
+                    <button type="button" class="btn-toggle-password" aria-label="Mostrar contraseña" aria-pressed="false">
+                        <svg class="icon-eye" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <svg class="icon-eye-off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                    </button>
+                </div>
                 <span class="error" id="errorPassword"></span>
             </div>
 
@@ -40,7 +53,9 @@
 
     </section>
 
-    <script src="/assets/js/config.js"></script>
+    <script src="../../../assets/js/config.js"></script>
+    <script src="../../../assets/js/formValidaciones.js"></script>
+    <script src="../passwordToggle.js"></script>
     <script src="loginUsuario.js"></script>
 
 </body>
