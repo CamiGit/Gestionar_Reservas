@@ -104,10 +104,10 @@ document.getElementById("mensajeConfirmacion").innerHTML = mensaje;
 const modalConfirmacion = new bootstrap.Modal(document.getElementById("modalConfirmacionReserva"));
 modalConfirmacion.show();
 
-// Cuando se cierre el modal, redirige a Acerca de Nosotros
+// Cuando se cierre el modal, redirige al inicio
 document.getElementById("modalConfirmacionReserva")
   .addEventListener("hidden.bs.modal", () => {
-    window.location.href = '/pages/aboutUs/aboutUs.html';
+    window.location.href = '/index.html';
   });
 
   return nuevaReserva;

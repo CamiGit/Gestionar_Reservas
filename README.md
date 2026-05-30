@@ -62,7 +62,6 @@ Gestionar_Reservas/
     ├── catalogoServicios/
     ├── aboutUs/
     ├── reservations/               # Flujo de reserva con calendario
-    ├── misReservas/                # Espacio personal del cliente
     ├── services/                   # Página auxiliar (legado)
     └── admin/
         ├── panelDeControl/         # Panel principal
@@ -82,7 +81,6 @@ Gestionar_Reservas/
 | Login | `/pages/login/` | Inicio de sesión |
 | Registro | `/pages/registro/` | Alta de clientes |
 | Reservas | `/pages/reservations/` | Selección de estilista, fecha, hora y confirmación |
-| Mis reservas | `/pages/misReservas/` | Citas del cliente autenticado |
 | Admin | `/pages/admin/panelDeControl/` | Panel de control (métricas, servicios, reservas) |
 
 ## 🔐 Sesión y autenticación
@@ -111,9 +109,9 @@ El token JWT viaja dentro de `usuarioLogueado.token` en las peticiones que lo re
 2. El frontend envía `POST {BASE_URL}/auth/login` con `correo` y `contrasena`.
 3. Si el API responde correctamente, se persiste `usuarioLogueado` en `localStorage`.
 4. Redirección según rol:
-   - **Cliente** → `/pages/misReservas/misReservas.html`
+   - **Cliente** → `/index.html`
    - **Admin** → `/pages/admin/panelDeControl/panelControl.html`
-5. El navbar ejecuta `actualizarNavbar()` y muestra **«Hola, {nombre}»**, el enlace **Mis reservas** y **Cerrar sesión**.
+5. El navbar ejecuta `actualizarNavbar()` y muestra **«Hola, {nombre}»** y **Cerrar sesión**.
 
 ### Flujo de registro
 
@@ -124,8 +122,8 @@ Validación en cliente → `POST /auth/register` con rol `CLIENTE` → mensaje d
 | Estado | Elementos visibles |
 |--------|-------------------|
 | Sin sesión | Botón **Iniciar sesión** |
-| Cliente logueado | Saludo, **Mis reservas**, **Cerrar sesión** |
-| Admin logueado | Saludo, **Mis reservas**, **Administrador**, **Cerrar sesión** |
+| Cliente logueado | Saludo, **Cerrar sesión** |
+| Admin logueado | Saludo, **Administrador**, **Cerrar sesión** |
 
 ### Diagrama (login)
 
@@ -135,15 +133,15 @@ sequenceDiagram
     participant F as Formulario login
     participant API as API Render
     participant LS as localStorage
-    participant P as Mis reservas
+    participant H as Home
 
     U->>F: Correo + contraseña
     F->>F: Validación (email, campos)
     F->>API: POST /auth/login
     API-->>F: token, nombre, rol
     F->>LS: Guardar usuarioLogueado
-    F->>P: Redirigir (cliente) o panel admin
-    P->>P: actualizarNavbar() → Hola, nombre + Mis reservas
+    F->>H: Redirigir (cliente) o panel admin
+    H->>H: actualizarNavbar() → Hola, nombre
 ```
 
 ## ✅ Validaciones de formularios
@@ -196,7 +194,7 @@ Abre la carpeta **`Gestionar_Reservas`** como raíz del servidor. URL típica co
 
 El proyecto mezcla rutas **absolutas** (`/components/...`) y **relativas** (`../../components/...`) según la página. La raíz del servidor debe ser la carpeta del repositorio (donde está `index.html`) para que ambas convivan correctamente.
 
-Páginas con rutas relativas ya corregidas: **login**, **registro**, **contacto**, **catálogo** y **mis reservas**.
+Páginas con rutas relativas ya corregidas: **login**, **registro**, **contacto** y **catálogo**.
 
 ## 🔗 Integración con el backend
 
@@ -204,21 +202,9 @@ Páginas con rutas relativas ya corregidas: **login**, **registro**, **contacto*
 |--------|----------|-------------------|
 | Registro | `POST /auth/register` | Conectado |
 | Login | `POST /auth/login` | Conectado |
-| Mis reservas | `GET /reservas/mis-reservas` | Frontend listo; **pendiente en backend** |
 | Crear servicio (admin) | `POST /servicios` | Parcial (`formCreacionServicios.js`) |
 | Catálogo público | `GET /servicios` | Disponible en API; catálogo usa `localStorage` + `productosCatalogo.js` |
 | Crear reserva | `POST /reservas` | Flujo visual completo; confirmación guarda en `localStorage` |
-
-### Peticiones autenticadas
-
-```http
-GET /reservas/mis-reservas HTTP/1.1
-Host: backend-style-factory.onrender.com
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-Accept: application/json
-```
-
-### Cuerpos JSON usados
 
 **Registro:**
 
@@ -267,15 +253,11 @@ Carga dinámica de banner, información, servicios destacados, reseñas, navbar 
 
 ### Catálogo (`pages/catalogoServicios/`)
 
-Grid de servicios con imagen, precio, tipo y duración. Los datos provienen de `productosCatalogo.js` enriquecidos con `localStorage`. Al pulsar **Reservar**, guarda `servicioSeleccionado` y navega al flujo de reservas.
+Grid de servicios con imagen, precio, tipo y duración. Incluye **filtro por categoría** (chips con contador: Todos, Corte, Color, Tratamiento, etc.) alineado con la identidad visual del sitio. Los datos provienen de `productosCatalogo.js` enriquecidos con `localStorage`. Al pulsar **Reservar**, guarda `servicioSeleccionado` y navega al flujo de reservas.
 
 ### Reservas (`pages/reservations/`)
 
-Calendario interactivo, selección de estilista y horario, componente de confirmación. Al confirmar, la reserva se almacena en `localStorage` (`reservas`) — **aún no llama a `POST /reservas`**.
-
-### Mis reservas (`pages/misReservas/`)
-
-Espacio personal del cliente tras el login. Requiere sesión activa; consulta `GET /reservas/mis-reservas` con el token JWT. Muestra tabla con servicio, estilista, fecha, hora y estado.
+Calendario interactivo, selección de estilista y horario, componente de confirmación. Al confirmar, la reserva se almacena en `localStorage` (`reservas`) y redirige al **inicio** — **aún no llama a `POST /reservas`**.
 
 ### Contacto (`pages/contact/`)
 
@@ -300,13 +282,12 @@ Formulario validado enviado a **Formspree** (no pasa por el API de Style Factory
 | Funcionalidad | Estado |
 |---------------|--------|
 | Home, nosotros, contacto | Operativo |
-| Catálogo renovado con tipo y duración | Operativo |
+| Catálogo con filtro por tipo, badges y duración | Operativo |
 | Login y registro conectados al API | Operativo |
 | Validaciones en tiempo real | Operativo |
 | Toggle mostrar/ocultar contraseña | Operativo |
-| Navbar con sesión, Mis reservas y admin | Operativo |
-| Redirección post-login a Mis reservas (cliente) | Operativo |
-| Página Mis reservas (UI + llamada API) | Operativo en UI; depende del endpoint backend |
+| Navbar con sesión y enlace admin | Operativo |
+| Redirección post-login al inicio (cliente) | Operativo |
 | Flujo de reserva con calendario | Operativo (datos locales) |
 | Panel admin (servicios y reservas) | Operativo (datos locales + POST servicios parcial) |
 | Integración completa reservas → API | Pendiente |
@@ -314,10 +295,9 @@ Formulario validado enviado a **Formspree** (no pasa por el API de Style Factory
 
 ### Próximos pasos de integración
 
-1. Implementar en backend `GET /reservas/mis-reservas` para la página del cliente.
-2. Conectar la confirmación de reserva con `POST /reservas`.
-3. Sincronizar catálogo y panel admin con `GET /servicios` y el resto de endpoints CRUD.
-4. Unificar rutas absolutas/relativas si el equipo despliega en un subdirectorio.
+1. Conectar la confirmación de reserva con `POST /reservas`.
+2. Sincronizar catálogo y panel admin con `GET /servicios` y el resto de endpoints CRUD.
+3. Unificar rutas absolutas/relativas si el equipo despliega en un subdirectorio.
 
 ---
 
