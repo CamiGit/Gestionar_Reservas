@@ -129,7 +129,7 @@
                         var destino =
                             usuarioLogueado.rol === 'admin'
                                 ? '/pages/admin/panelDeControl/panelControl.html'
-                                : '/index.html';
+                                : '/pages/misReservas/misReservas.html';
                         if (window.parent && window.parent !== window) {
                             window.parent.location.href = destino;
                         } else {
