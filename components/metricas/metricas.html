@@ -1,38 +1,69 @@
+<div class="metricas-contenedor">
  <div class="header">
+    <div class="header-left">
+        <p class="header-saludo" id="saludo-header"></p>
         <h1>Panel de Reservas</h1>
-        <div class="filtros">
-            <button class="activo" onclick="cambiarRango('7d', this)">7 días</button>
-            <button onclick="cambiarRango('30d', this)">30 días</button>
-            <button onclick="cambiarRango('90d', this)">90 días</button>
-        </div>
+        <p class="header-fecha" id="fecha-header"></p>
     </div>
-
-    <!-- Métricas -->
-    <div class="metricas">
-        <div class="tarjeta">
-            <p>Ingresos</p>
-            <h2 id="m-ingresos">$2.600.000</h2>
-            <span class="verde" id="d-ingresos">+15.4%</span>
-        </div>
-        <div class="tarjeta">
-            <p>Reservas</p>
-            <h2 id="m-reservas">94</h2>
-            <span class="verde" id="d-reservas">+12.1%</span>
-        </div>
-        <div class="tarjeta">
-            <p>Clientes</p>
-            <h2 id="m-clientes">61</h2>
-            <span class="verde" id="d-clientes">+8.3%</span>
-        </div>
-        <div class="tarjeta">
-            <p>Canceladas</p>
-            <h2 id="m-canceladas">4.3%</h2>
-            <span class="rojo" id="d-canceladas">-0.5%</span>
-        </div>
+    <div class="filtros">
+        <button class="activo" onclick="cambiarRango('7d', this)">7 días</button>
+        <button onclick="cambiarRango('30d', this)">30 días</button>
+        <button onclick="cambiarRango('90d', this)">90 días</button>
     </div>
+</div>
 
-    <!-- Gráfico -->
-    <div class="grafico">
+<!-- Métricas -->
+<div class="metricas">
+    <div class="tarjeta tarjeta-ingresos">
+        <div class="tarjeta-top">
+            <div class="tarjeta-icon"><i class="fas fa-dollar-sign"></i></div>
+            <div class="tarjeta-info">
+                <p>Ingresos</p>
+                <h2 id="m-ingresos">$2.600.000</h2>
+                <span class="verde" id="d-ingresos">+15.4%</span>
+            </div>
+        </div>
+        <div class="sparkline-wrap"><canvas id="spark-ingresos"></canvas></div>
+    </div>
+    <div class="tarjeta tarjeta-reservas">
+        <div class="tarjeta-top">
+            <div class="tarjeta-icon"><i class="fas fa-calendar-check"></i></div>
+            <div class="tarjeta-info">
+                <p>Reservas</p>
+                <h2 id="m-reservas">94</h2>
+                <span class="verde" id="d-reservas">+12.1%</span>
+            </div>
+        </div>
+        <div class="sparkline-wrap"><canvas id="spark-reservas"></canvas></div>
+    </div>
+    <div class="tarjeta tarjeta-clientes">
+        <div class="tarjeta-top">
+            <div class="tarjeta-icon"><i class="fas fa-users"></i></div>
+            <div class="tarjeta-info">
+                <p>Clientes</p>
+                <h2 id="m-clientes">61</h2>
+                <span class="verde" id="d-clientes">+8.3%</span>
+            </div>
+        </div>
+        <div class="sparkline-wrap"><canvas id="spark-clientes"></canvas></div>
+    </div>
+    <div class="tarjeta tarjeta-canceladas">
+        <div class="tarjeta-top">
+            <div class="tarjeta-icon"><i class="fas fa-ban"></i></div>
+            <div class="tarjeta-info">
+                <p>Canceladas</p>
+                <h2 id="m-canceladas">4.3%</h2>
+                <span class="rojo" id="d-canceladas">-0.5%</span>
+            </div>
+        </div>
+        <div class="sparkline-wrap"><canvas id="spark-canceladas"></canvas></div>
+    </div>
+</div>
+
+<!-- Gráficos -->
+<div class="graficos-row">
+
+    <div class="grafico grafico-lineas">
         <p>Ingresos vs Reservas</p>
         <div class="leyenda">
             <div class="leyenda-item">
@@ -49,19 +80,29 @@
         </div>
     </div>
 
-    <!-- Tabla -->
-    <div class="tabla-contenedor">
-        <div class="tabla-header">Servicios destacados</div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Servicio</th>
-                    <th>Reservas</th>
-                    <th>Ingresos</th>
-                    <th>Estado</th>
-                </tr>
-            </thead>
-            <tbody id="tabla-body"></tbody>
-        </table>
+    <div class="grafico grafico-torta">
+        <p>Reservas por servicio</p>
+        <div style="position: relative; height: 250px; display: flex; align-items: center; justify-content: center;">
+            <canvas id="grafico-torta"></canvas>
+        </div>
     </div>
 
+</div>
+
+<!-- Tabla -->
+<div class="tabla-contenedor">
+    <div class="tabla-header">Servicios destacados</div>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Servicio</th>
+                <th>Reservas</th>
+                <th>Ingresos</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody id="tabla-body"></tbody>
+    </table>
+</div>
+</div>

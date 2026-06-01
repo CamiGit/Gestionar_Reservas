@@ -224,6 +224,12 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--color-secondary);
     font-weight: 500;
     font-size: 20px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.user-name:hover {
+    text-decoration: none;
 }
 
 /* ============================================

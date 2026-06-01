@@ -92,56 +92,42 @@ fetch('/components/navbar/navbar.html')
     })
     .catch(err => console.error('Error cargando el navbar:', err));
 
-// Cargar banner de inicio
-fetch('components/bannerInicio/bannerInicio.html')
-    .then(res => res.text())
-    .then(html => {
-        document.getElementById('bannerInicio-placeholder').innerHTML = html;
+function cargarComponenteHtml(ruta, placeholderId, errorMensaje, callback) {
+    const placeholder = document.getElementById(placeholderId);
+    if (!placeholder) return Promise.resolve();
 
-        
-    })
-    .catch(err => console.error('Error cargando el banner en index:', err));
+    return fetch(ruta)
+        .then(res => res.text())
+        .then(html => {
+            placeholder.innerHTML = html;
+            if (typeof callback === 'function') callback(html);
+        })
+        .catch(err => console.error(errorMensaje, err));
+}
+
+// Cargar banner de inicio
+cargarComponenteHtml('/components/bannerInicio/bannerInicio.html', 'bannerInicio-placeholder', 'Error cargando el banner en index:');
 
 // Cargar sección de información del index
-fetch('components/infoIndex/infoIndex.html')
-    .then(res => res.text())
-    .then(html => {
-        document.getElementById('infoIndex-placeholder').innerHTML = html;
-    })
-    .catch(err => console.error('Error cargando el información index:', err));
+cargarComponenteHtml('/components/infoIndex/infoIndex.html', 'infoIndex-placeholder', 'Error cargando el información index:');
 
 // Cargar sección de servicios destacados
-fetch('/components/ServiciosDestacados/ServiciosDestacados.html')
-    .then(res => res.text())
-    .then(html => {
-        document.getElementById('serviceDes-placeholder').innerHTML = html;
-    })
-    .catch(err => console.error('Error cargando servicios destacados:', err));
+cargarComponenteHtml('/components/ServiciosDestacados/ServiciosDestacados.html', 'serviceDes-placeholder', 'Error cargando servicios destacados:');
 
 // Cargar sección de reseñas
-fetch('components/review/review.html')
-    .then(res => res.text())
-    .then(html => {
-        document.getElementById('review-placeholder').innerHTML = html;
-
-    // Carga el CSS 
+cargarComponenteHtml('/components/review/review.html', 'review-placeholder', 'Error cargando los comentarios:', () => {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = '../../components/review/review.css';
+    link.href = '/components/review/review.css';
     document.head.appendChild(link);
 
-  
     setTimeout(() => {
-        initialReview();
+        if (typeof initialReview === 'function') {
+            initialReview();
+        }
     }, 100);
-    })
-    .catch(err => console.error('Error cargando los comentarios:', err));
+});
 
 // Cargar footer
-fetch('components/footer/footer.html')
-    .then(res => res.text())
-    .then(html => {
-        document.getElementById('footer-placeholder').innerHTML = html;
-    })
-    .catch(err => console.error('Error cargando el footer:', err));
+cargarComponenteHtml('/components/footer/footer.html', 'footer-placeholder', 'Error cargando el footer:');
 

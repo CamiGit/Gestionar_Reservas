@@ -45,14 +45,17 @@ document.addEventListener('DOMContentLoaded', function () {
             const datos = await respuesta.json();
 
             const usuarioLogueado = {
-                token: datos.token ?? datos.accessToken ?? '',
-                correo: datos.correo ?? datos.email ?? datos.usuario?.correo ?? datos.usuario?.email ?? '',
-                nombre: datos.nombre ?? datos.fullName ?? datos.usuario?.nombre ?? '',
-                rol: (datos.rol ?? datos.role ?? 'cliente').toLowerCase(),
+                id: datos.id ?? datos.data?.usuario?.id ?? datos.usuario?.id ?? null,
+                token: datos.token ?? datos.accessToken ?? datos.data?.token ?? datos.usuario?.token ?? '',
+                correo: datos.correo ?? datos.email ?? datos.data?.usuario?.correo ?? datos.usuario?.correo ?? datos.usuario?.email ?? '',
+                nombre: datos.nombre ?? datos.fullName ?? datos.data?.usuario?.nombre ?? datos.usuario?.nombre ?? datos.usuario?.nombreCompleto ?? '',
+                telefono: datos.telefono ?? datos.data?.usuario?.telefono ?? datos.usuario?.telefono ?? datos.usuario?.celular ?? '',
+                rol: (datos.rol ?? datos.role ?? datos.data?.usuario?.rol ?? datos.usuario?.rol ?? 'cliente').toLowerCase(),
                 fechaLogin: new Date().toISOString()
             };
 
             localStorage.setItem('usuarioLogueado', JSON.stringify(usuarioLogueado));
+            console.debug('usuarioLogueado guardado:', usuarioLogueado);
 
             const rol = usuarioLogueado.rol;
 

@@ -28,6 +28,17 @@ const datos = {
             reservas:   'verde',
             clientes:   'verde',
             canceladas: 'rojo'
+        },
+
+        // Reservas por servicio para el gráfico de torta
+        serviciosPie: [32, 20, 12, 22, 8],
+
+        // Tendencia diaria para los sparklines de cada tarjeta
+        sparklines: {
+            ingresos:   [320000, 410000, 280000, 490000, 560000, 720000, 480000],
+            reservas:   [8, 11, 7, 14, 17, 22, 15],
+            clientes:   [5, 7, 4, 9, 11, 14, 11],
+            canceladas: [5, 3, 6, 4, 5, 3, 4]
         }
     },
 
@@ -59,6 +70,17 @@ const datos = {
             reservas:   'verde',
             clientes:   'verde',
             canceladas: 'verde'
+        },
+
+        // Reservas por servicio para el gráfico de torta
+        serviciosPie: [58, 38, 22, 36, 12],
+
+        // Tendencia semanal para los sparklines de cada tarjeta
+        sparklines: {
+            ingresos:   [1200000, 1540000, 1380000, 1820000],
+            reservas:   [32, 44, 39, 51],
+            clientes:   [20, 28, 24, 26],
+            canceladas: [4, 4, 3, 4]
         }
     },
 
@@ -90,6 +112,17 @@ const datos = {
             reservas:   'verde',
             clientes:   'verde',
             canceladas: 'verde'
+        },
+
+        // Reservas por servicio para el gráfico de torta
+        serviciosPie: [142, 87, 54, 98, 23],
+
+        // Tendencia mensual para los sparklines de cada tarjeta
+        sparklines: {
+            ingresos:   [4200000, 5100000, 6800000],
+            reservas:   [112, 138, 184],
+            clientes:   [62, 78, 70],
+            canceladas: [4, 3, 2]
         }
     }
 };
@@ -107,8 +140,9 @@ const servicios = [
 
 //Grafico con chart.js
 
-// Variable global para guardar la instancia activa del gráfico
+// Variables globales para las instancias activas de cada gráfico
 let grafico;
+let graficoPie;
 
 // Construye el gráfico de líneas para el rango de tiempo indicado
 function construirGrafico(rango) {
@@ -177,6 +211,97 @@ function construirGrafico(rango) {
 }
 
 
+// Construye el gráfico de torta con la distribución de reservas por servicio para el rango dado
+function construirGraficoPie(rango) {
+    if (graficoPie) graficoPie.destroy();
+
+    const colores = [
+        '#522676',
+        '#AE8D3E',
+        '#7B3FA8',
+        '#D4A84B',
+        '#9B6AC0',
+    ];
+
+    graficoPie = new Chart(document.getElementById('grafico-torta'), {
+        type: 'doughnut',
+        data: {
+            labels: servicios.map(s => s.nombre),
+            datasets: [{
+                data: datos[rango].serviciosPie,
+                backgroundColor: colores,
+                borderColor: '#fff',
+                borderWidth: 3,
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '60%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: { size: 11 },
+                        boxWidth: 12,
+                        padding: 10,
+                        color: '#444'
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ` ${ctx.parsed} reservas`
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Renderiza un sparkline en el canvas indicado
+function crearSparkline(id, valores, color) {
+    const canvas = document.getElementById(id);
+    if (!canvas) return;
+    const existing = Chart.getChart(canvas);
+    if (existing) existing.destroy();
+
+    new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: valores.map((_, i) => i),
+            datasets: [{
+                data: valores,
+                borderColor: color,
+                borderWidth: 1.5,
+                pointRadius: 0,
+                fill: true,
+                backgroundColor: color + '18',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            scales: {
+                x: { display: false },
+                y: { display: false, grace: '20%' }
+            },
+            animation: { duration: 500 }
+        }
+    });
+}
+
+// Construye los cuatro sparklines según el rango activo
+function construirSparklines(rango) {
+    const sp = datos[rango].sparklines;
+    crearSparkline('spark-ingresos',   sp.ingresos,   '#522676');
+    crearSparkline('spark-reservas',   sp.reservas,   '#AE8D3E');
+    crearSparkline('spark-clientes',   sp.clientes,   '#7B3FA8');
+    crearSparkline('spark-canceladas', sp.canceladas, '#dc3545');
+}
+
 // Cambio del grafico con el rango
 // Recibe el rango seleccionado y el elemento que fue clickeado
 function cambiarRango(rango, boton) {
@@ -203,36 +328,47 @@ function cambiarRango(rango, boton) {
         delta.className = d.colores[k];
     });
 
-    // Destruye el gráfico actual y construye uno nuevo con los datos del rango elegido
+    // Destruye los gráficos actuales y construye nuevos con los datos del rango elegido
     construirGrafico(rango);
+    construirGraficoPie(rango);
+    construirSparklines(rango);
 }
 
 function initMetricas(){
 
-    // Selecciona el <tbody> del HTML donde se van a insertar las filas dinámicamente
-const tbody = document.getElementById('tabla-body');
-// Recorre cada servicio del array para generar una fila HTML por cada uno
- // limpiar tabla
+    // Saludo dinámico según la hora del día
+    const hora = new Date().getHours();
+    const saludo = hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
+    const saludoEl = document.getElementById('saludo-header');
+    if (saludoEl) saludoEl.textContent = `${saludo}, Admin`;
+
+    // Fecha actual formateada
+    const fechaEl = document.getElementById('fecha-header');
+    if (fechaEl) {
+        fechaEl.textContent = new Date().toLocaleDateString('es-CO', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+    }
+
+    const tbody = document.getElementById('tabla-body');
     tbody.innerHTML = "";
-servicios.forEach(s => {
-    // Convierte el valor interno del estado en texto legible para el usuario
-    // Si no es activo ni pausado, cae en el caso por defecto: 'Eliminado'
-    const etiqueta = s.estado === 'activo'  ? 'Activo'
-                    : s.estado === 'pausado' ? 'Pausado'
-                    : 'Eliminado';
+    servicios.forEach((s, index) => {
+        const etiqueta = s.estado === 'activo'  ? 'Activo'
+                        : s.estado === 'pausado' ? 'Pausado'
+                        : 'Eliminado';
 
-    // Agrega una nueva fila al final del tbody usando template literals
-    // La clase del <span> usa s.estado para aplicar el color correcto desde CSS
-    tbody.innerHTML += `
-        <tr>
-            <td>${s.nombre}</td>
-            <td>${s.reservas}</td>
-            <td>${s.ingresos}</td>
-            <td><span class="badge ${s.estado}">${etiqueta}</span></td>
-        </tr>
-    `;
-});
+        tbody.innerHTML += `
+            <tr>
+                <td class="ranking">#${index + 1}</td>
+                <td>${s.nombre}</td>
+                <td>${s.reservas}</td>
+                <td>${s.ingresos}</td>
+                <td><span class="badge ${s.estado}">${etiqueta}</span></td>
+            </tr>
+        `;
+    });
 
-// Llama a construirGrafico al cargar la página con '7d' como rango por defecto
-construirGrafico('7d');
+    construirGrafico('7d');
+    construirGraficoPie('7d');
+    construirSparklines('7d');
 }

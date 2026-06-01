@@ -1,7 +1,8 @@
 let reservaActual = {
   servicio: { nombre: "CORTE BÁSICO", precio: 50000 },
-  profesional: { nombre: "ANDREA RIVERA" },
+  profesional: { nombre: "ANDREA RIVERA", id: null },
   fecha: "ABR 25",
+  fechaISO: null,
   hora: "2:00 PM",
 };
 
@@ -51,64 +52,95 @@ function actualizarServicio(nombre, precio) {
   renderizar();
 }
 
-function actualizarProfesional(nombre) {
-  reservaActual.profesional = { nombre: nombre.toUpperCase() };
+function actualizarProfesional(nombre, id = null) {
+  reservaActual.profesional = { nombre: nombre.toUpperCase(), id };
   renderizar();
 }
 
-function actualizarFechaHora(fecha, hora) {
-  reservaActual.fecha = fecha;
+function actualizarFechaHora(fechaLegible, hora, fechaISO = null) {
+  reservaActual.fecha = fechaLegible;
+  reservaActual.fechaISO = fechaISO;
   reservaActual.hora = hora;
   renderizar();
 }
 
-function confirmarReserva() {
+async function confirmarReserva() {
   const servicio = JSON.parse(localStorage.getItem('servicioSeleccionado'));
   const usuarioLogueado = JSON.parse(localStorage.getItem('usuarioLogueado'));
 
+  const nombreServicio = servicio?.nombre?.toUpperCase() || reservaActual.servicio.nombre;
+  const precioServicio  = servicio?.precio || reservaActual.servicio.precio;
+
+  const usuarioId   = usuarioLogueado?.id ?? null;
+  const empleadoId  = reservaActual.profesional.id ?? null;
+  const servicioId  = servicio?.id ?? null;
+  const token       = usuarioLogueado?.token ?? null;
+
+  // Fecha en formato "YYYY-MM-DD" (viene de fechaISO o se convierte desde "DD/MM/YYYY")
+  let fechaISO = reservaActual.fechaISO;
+  if (!fechaISO && reservaActual.fecha) {
+    const partes = reservaActual.fecha.split('/');
+    if (partes.length === 3) fechaISO = `${partes[2]}-${partes[1]}-${partes[0]}`;
+  }
+
+  // Intentar guardar en la API si hay token e IDs disponibles
+  if (token && usuarioId && empleadoId && servicioId && fechaISO) {
+    try {
+      const res = await fetch(`${BASE_URL}/reservas`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          fecha: fechaISO,
+          hora: reservaActual.hora,
+          estado: 'PENDIENTE',
+          usuarioId,
+          empleadoId,
+          servicioId,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.text().catch(() => null);
+        console.warn(`POST /reservas → ${res.status}`, err);
+      }
+    } catch (err) {
+      console.warn('No se pudo guardar la reserva en la API, se guardará solo localmente.', err);
+    }
+  }
+
+  // Guardar siempre en localStorage como respaldo
   const nuevaReserva = {
     cliente: usuarioLogueado?.nombre ?? 'Invitado',
-    servicio: {
-      nombre: servicio?.nombre?.toUpperCase() || reservaActual.servicio.nombre,
-      precio: servicio?.precio || reservaActual.servicio.precio
-    },
+    servicio: { nombre: nombreServicio, precio: precioServicio },
     profesional: reservaActual.profesional,
     fecha: reservaActual.fecha,
-    hora: reservaActual.hora
+    hora: reservaActual.hora,
   };
-
   const reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-
-  // Genera id automático
   const maxId = reservas.length > 0 ? Math.max(...reservas.map(r => r.id || 0)) : 0;
   nuevaReserva.id = maxId + 1;
-
   reservas.push(nuevaReserva);
   localStorage.setItem("reservas", JSON.stringify(reservas));
-
-  // Limpia el servicio seleccionado
   localStorage.removeItem('servicioSeleccionado');
 
-   // Mostrar modal con los mismos datos que la alerta original
-const mensaje = `
-  <strong style="color:#28a745;">RESERVA CONFIRMADA</strong><br><br>
-  ${nuevaReserva.servicio.nombre}<br>
-  ${nuevaReserva.profesional.nombre}<br>
-  ${nuevaReserva.fecha} / ${nuevaReserva.hora}<br>
-  ${formatearPrecio(nuevaReserva.servicio.precio)}
-`;
+  const mensaje = `
+    <strong style="color:#28a745;">RESERVA CONFIRMADA</strong><br><br>
+    ${nombreServicio}<br>
+    ${reservaActual.profesional.nombre}<br>
+    ${reservaActual.fecha} / ${reservaActual.hora}<br>
+    ${formatearPrecio(precioServicio)}
+  `;
+  document.getElementById("mensajeConfirmacion").innerHTML = mensaje;
 
-document.getElementById("mensajeConfirmacion").innerHTML = mensaje;
+  const modalConfirmacion = new bootstrap.Modal(document.getElementById("modalConfirmacionReserva"));
+  modalConfirmacion.show();
 
-// Mostrar el modal confirmado
-const modalConfirmacion = new bootstrap.Modal(document.getElementById("modalConfirmacionReserva"));
-modalConfirmacion.show();
-
-// Cuando se cierre el modal, redirige a Acerca de Nosotros
-document.getElementById("modalConfirmacionReserva")
-  .addEventListener("hidden.bs.modal", () => {
-    window.location.href = '/pages/aboutUs/aboutUs.html';
-  });
+  document.getElementById("modalConfirmacionReserva")
+    .addEventListener("hidden.bs.modal", () => {
+      window.location.href = '/pages/aboutUs/aboutUs.html';
+    });
 
   return nuevaReserva;
 }

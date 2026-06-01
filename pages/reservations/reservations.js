@@ -267,11 +267,11 @@ function seleccionarHora(hora) {
     const precioServicio = servicio?.precio ?? 0;
 
     window.ConfirmacionServicio.actualizarServicio(nombreServicio, precioServicio);
-    window.ConfirmacionServicio.actualizarProfesional(estado.estilista.nombre);
+    window.ConfirmacionServicio.actualizarProfesional(estado.estilista.nombre, estado.estilista.id);
 
     const [anio, mes, dia] = estado.fecha.split("-");
     const fechaLegible = `${dia}/${mes}/${anio}`;
-    window.ConfirmacionServicio.actualizarFechaHora(fechaLegible, estado.hora);
+    window.ConfirmacionServicio.actualizarFechaHora(fechaLegible, estado.hora, estado.fecha);
   }
 
   const confirmWrapper = document.getElementById("confirmacionServicioWrapper");
