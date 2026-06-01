@@ -124,7 +124,7 @@ function mostrarPantallaNoSesion() {
             <p style="color:var(--muted);max-width:400px;margin:0 auto 2rem;line-height:1.7;">
                 Para ver tu perfil y administrar tus reservas, ingresa con tu cuenta.
             </p>
-            <a href="/pages/login/login.html" class="btn btn-primary">
+            <a href="./pages/login/login.html" class="btn btn-primary">
                 <i class="fa-solid fa-right-to-bracket"></i>
                 Iniciar sesión
             </a>
@@ -147,7 +147,7 @@ function mostrarErrorPerfil(mensaje = 'Hubo un problema al comunicarse con el se
             <p style="color:var(--muted);max-width:400px;margin:0 auto 2rem;line-height:1.7;">
                 ${mensaje} Intenta de nuevo más tarde.
             </p>
-            <a href="/pages/login/login.html" class="btn btn-outline-secondary">Volver al inicio</a>
+            <a href="./pages/login/login.html" class="btn btn-outline-secondary">Volver al inicio</a>
         </div>`;
 }
 
@@ -329,7 +329,7 @@ function renderReservas(reservas) {
                 </div>
                 <p class="reservas-empty-title">Sin reservas aún</p>
                 <p class="reservas-empty-sub">Cuando agendes una cita aparecerá aquí.</p>
-                <a href="/pages/catalogoServicios/catalogoServicios.html" class="btn btn-primary" style="margin-top:1rem;">
+                <a href="./pages/catalogoServicios/catalogoServicios.html" class="btn btn-primary" style="margin-top:1rem;">
                     <i class="fa-solid fa-cut"></i> Ver catálogo
                 </a>
             </div>`;
