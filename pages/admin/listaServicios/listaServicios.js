@@ -6,23 +6,42 @@ let serviciosEnMemoria = []; // fuente de verdad en memoria, siempre desde la AP
 const BASE_URL = "https://backend-style-factory.onrender.com";
 
 export async function renderizarTabla() {
-  try {
-    const respuesta = await fetch(BASE_URL + "/servicios");
-    if (!respuesta.ok) throw new Error(`GET /servicios → ${respuesta.status}`);
-    serviciosEnMemoria = await respuesta.json();
-    // Sincronizar localStorage para que formCreacionServicios pueda leer el id al editar
-    localStorage.setItem("Lista de Servicios", JSON.stringify(serviciosEnMemoria));
-  } catch (error) {
-    console.error("Error al cargar los servicios desde el backend:", error);
-    serviciosEnMemoria = [];
-  }
-
   const tbody = document.getElementById("tabla-servicios");
   if (!tbody) return;
+
+  const spinner = (msg) => `<tr><td colspan="5"><div style="display:flex;flex-direction:column;align-items:center;padding:2rem;gap:.75rem;"><div style="width:40px;height:40px;border:3px solid #f0e6ff;border-top-color:#522676;border-radius:50%;animation:sf-spin 0.8s linear infinite;"></div><span style="color:#888;font-size:.85rem;">${msg}</span></div><style>@keyframes sf-spin{to{transform:rotate(360deg);}}</style></td></tr>`;
+
+  const intentosMax = 3;
+  for (let intento = 1; intento <= intentosMax; intento++) {
+    tbody.innerHTML = spinner(intento === 1 ? "Cargando servicios..." : `Reintentando conexión (${intento}/${intentosMax})...`);
+    try {
+      const respuesta = await fetch(BASE_URL + "/servicios");
+      if (!respuesta.ok) throw new Error(`GET /servicios → ${respuesta.status}`);
+      serviciosEnMemoria = await respuesta.json();
+      localStorage.setItem("Lista de Servicios", JSON.stringify(serviciosEnMemoria));
+      break;
+    } catch (error) {
+      console.warn(`Intento ${intento} fallido:`, error.message);
+      serviciosEnMemoria = [];
+      if (intento < intentosMax) await new Promise(r => setTimeout(r, 3000));
+    }
+  }
+
   tbody.innerHTML = "";
 
   if (!serviciosEnMemoria.length) {
-    tbody.innerHTML = `<tr><td colspan="5" class="text-center">No hay servicios registrados</td></tr>`;
+    tbody.innerHTML = `
+      <tr><td colspan="5">
+        <div style="display:flex;flex-direction:column;align-items:center;padding:2rem;gap:1rem;">
+          <i class="fa-solid fa-circle-exclamation fa-2x" style="color:#d97706;"></i>
+          <p style="color:#555;font-size:.9rem;margin:0;text-align:center;">No se pudieron cargar los servicios.<br>El servidor puede estar iniciando.</p>
+          <button id="btn-reintentar-servicios" style="background:#522676;color:#fff;border:none;border-radius:8px;padding:.5rem 1.4rem;font-size:.88rem;font-weight:500;cursor:pointer;">
+            <i class="fa-solid fa-rotate-right"></i> Reintentar
+          </button>
+        </div>
+      </td></tr>`;
+    document.getElementById("btn-reintentar-servicios")
+      ?.addEventListener("click", () => renderizarTabla());
     return;
   }
 

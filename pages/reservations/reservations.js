@@ -107,46 +107,82 @@ document.addEventListener("DOMContentLoaded", renderizarReservas);
 //obtener array de estilistas del endpoint
 async function cargarEstilistas() {
   const token = sfSession.getToken();
+  const carouselInner = document.getElementById("carouselInner");
+  if (carouselInner) {
+    carouselInner.innerHTML = `
+      <div class="carousel-item active">
+        <div style="display:flex;flex-direction:column;align-items:center;padding:3rem 1rem;gap:1rem;">
+          <div style="width:48px;height:48px;border:3px solid #f0e6ff;border-top-color:#522676;border-radius:50%;animation:sf-spin 0.8s linear infinite;"></div>
+          <p style="color:#888;font-size:.9rem;margin:0;">Cargando estilistas...</p>
+        </div>
+      </div>
+      <style>@keyframes sf-spin{to{transform:rotate(360deg);}}</style>`;
+  }
 
   // Limpiar caché vieja para forzar datos frescos del DB
   localStorage.removeItem("estilistas");
 
   // ── 1. Empleados ACTIVOS desde el DB (/empleados) ──────────────────────────
-  let idsActivos = null; // null = no se pudo consultar el DB
-  try {
-    const resEmp = await fetch(`${BASE_URL}/empleados`);
-    if (resEmp.ok) {
-      const lista = await resEmp.json();
-      idsActivos = new Set(
-        (Array.isArray(lista) ? lista : [])
-          .filter(e => e.estado !== false)
-          .map(e => String(e.id))
-      );
-    }
-  } catch { /* silencioso */ }
+  let idsActivos = null;
+  for (let intento = 1; intento <= 3; intento++) {
+    try {
+      const resEmp = await fetch(`${BASE_URL}/empleados`);
+      if (resEmp.ok) {
+        const lista = await resEmp.json();
+        idsActivos = new Set(
+          (Array.isArray(lista) ? lista : [])
+            .filter(e => e.estado === true || e.estado === 1 || e.estado === "true")
+            .map(e => String(e.id))
+        );
+        break;
+      }
+    } catch { /* silencioso */ }
+    if (intento < 3) await new Promise(r => setTimeout(r, 2000));
+  }
 
   // ── 2. Estilistas con horarios desde el DB (/horarios/agrupados) ────────────
   let estilistas = null;
-  for (const auth of [`Bearer ${token}`, "Bearer null", ""]) {
-    try {
-      const opts = auth ? { headers: { Authorization: auth } } : {};
-      const res  = await fetch(`${BASE_URL}/horarios/agrupados`, opts);
-      if (res.ok) { estilistas = await res.json(); break; }
-      console.warn(`/horarios/agrupados → ${res.status}`);
-    } catch (err) {
-      console.warn("Error /horarios/agrupados:", err.message);
+  const intentosMax = 3;
+  for (let intento = 1; intento <= intentosMax; intento++) {
+    for (const auth of [`Bearer ${token}`, "Bearer null", ""]) {
+      try {
+        const opts = auth ? { headers: { Authorization: auth } } : {};
+        const res  = await fetch(`${BASE_URL}/horarios/agrupados`, opts);
+        if (res.ok) { estilistas = await res.json(); break; }
+        console.warn(`/horarios/agrupados → ${res.status}`);
+      } catch (err) {
+        console.warn(`Error /horarios/agrupados (intento ${intento}):`, err.message);
+      }
+    }
+    if (estilistas?.length) break;
+
+    // Si no cargó y quedan intentos, esperar y mostrar mensaje
+    if (intento < intentosMax) {
+      if (carouselInner) {
+        carouselInner.innerHTML = `
+          <div class="carousel-item active">
+            <div style="display:flex;flex-direction:column;align-items:center;padding:3rem 1rem;gap:1rem;">
+              <div style="width:48px;height:48px;border:3px solid #f0e6ff;border-top-color:#522676;border-radius:50%;animation:sf-spin 0.8s linear infinite;"></div>
+              <p style="color:#888;font-size:.9rem;margin:0;">Reintentando conexión (${intento}/${intentosMax})...</p>
+            </div>
+          </div>`;
+      }
+      await new Promise(r => setTimeout(r, 3000));
     }
   }
 
-  // Si el DB no responde no mostramos datos obsoletos del caché
+  // Si tras todos los intentos no hay datos, mostrar botón de reintento
   if (!estilistas || !estilistas.length) {
-    const carouselInner = document.getElementById("carouselInner");
     if (carouselInner) {
       carouselInner.innerHTML = `
         <div class="carousel-item active">
-          <p class="text-center text-muted py-4">
-            No hay estilistas disponibles. Inicia sesión como cliente para verlos.
-          </p>
+          <div style="display:flex;flex-direction:column;align-items:center;padding:3rem 1rem;gap:1rem;">
+            <i class="fa-solid fa-circle-exclamation fa-2x" style="color:#d97706;"></i>
+            <p style="color:#555;font-size:.95rem;margin:0;text-align:center;">No se pudieron cargar los estilistas.<br>El servidor puede estar iniciando.</p>
+            <button onclick="cargarEstilistas()" style="background:#522676;color:#fff;border:none;border-radius:8px;padding:.55rem 1.5rem;font-size:.9rem;font-weight:500;cursor:pointer;">
+              <i class="fa-solid fa-rotate-right"></i> Reintentar
+            </button>
+          </div>
         </div>`;
     }
     return;
@@ -165,7 +201,6 @@ async function cargarEstilistas() {
   }
 
   if (!estilistas.length) {
-    const carouselInner = document.getElementById("carouselInner");
     if (carouselInner) {
       carouselInner.innerHTML = `
         <div class="carousel-item active">
@@ -180,8 +215,8 @@ async function cargarEstilistas() {
   // Guardar solo para que seleccionarEstilista pueda leer los datos
   localStorage.setItem("estilistas", JSON.stringify(estilistas));
 
-  const carouselInner = document.getElementById("carouselInner");
   if (!carouselInner) return;
+  carouselInner.innerHTML = ""; // limpiar spinner antes de renderizar
 
   const cantCards = 4;
   for (let i = 0; i < estilistas.length; i += cantCards) {

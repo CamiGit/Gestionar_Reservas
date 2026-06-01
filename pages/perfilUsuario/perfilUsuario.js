@@ -386,7 +386,14 @@ async function renderPerfilUsuario() {
     if (perfilCacheado) {
         pintarPerfil(perfilCacheado);
         renderStats(0);
-        renderReservas([]);
+        // Mostrar spinner en reservas mientras carga
+        const lista = document.getElementById('reservasList');
+        if (lista) lista.innerHTML = `
+            <div style="display:flex;flex-direction:column;align-items:center;padding:2.5rem 1rem;gap:1rem;">
+              <div style="width:40px;height:40px;border:3px solid #f0e6ff;border-top-color:#522676;border-radius:50%;animation:sf-spin 0.8s linear infinite;"></div>
+              <p style="color:#888;font-size:.9rem;margin:0;">Cargando reservas...</p>
+            </div>
+            <style>@keyframes sf-spin{to{transform:rotate(360deg);}}</style>`;
     }
 
     if (!token) {

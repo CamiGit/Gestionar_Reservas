@@ -1,4 +1,31 @@
 /**
+ * sfLoader — muestra/oculta un spinner de carga en un contenedor
+ *
+ * Uso:
+ *   sfLoader.show('mi-contenedor-id')          // muestra spinner
+ *   sfLoader.hide('mi-contenedor-id', html)     // oculta spinner y pone contenido
+ */
+window.sfLoader = {
+  show(containerId, mensaje = 'Cargando...') {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    el.innerHTML = `
+      <div class="sf-loader-wrap" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;gap:1rem;">
+        <div style="width:48px;height:48px;border:3px solid #f0e6ff;border-top-color:#522676;border-radius:50%;animation:sf-spin 0.8s linear infinite;"></div>
+        <p style="color:#888;font-size:.9rem;margin:0;">${mensaje}</p>
+      </div>
+      <style>
+        @keyframes sf-spin { to { transform: rotate(360deg); } }
+      </style>`;
+  },
+  hide(containerId, html = '') {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    el.innerHTML = html;
+  },
+};
+
+/**
  * sfAlert — reemplaza alert() nativo con un modal estilizado de Bootstrap
  *
  * Uso:

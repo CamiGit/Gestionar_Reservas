@@ -41,20 +41,41 @@ function renderizarTablaReservas(reservas) {
 
 async function cargarReservasDesdeAPI() {
     const token = sfSession.getToken();
-    try {
-        const res = await fetch(`${BASE_URL}/reservas`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-            reservasCache = await res.json();
-            renderizarTablaReservas(reservasCache);
-            return;
+    const tbody = document.getElementById("tabla-reservas");
+    const spinner = (msg) => `<tr><td colspan="8"><div style="display:flex;flex-direction:column;align-items:center;padding:2rem;gap:.75rem;"><div style="width:40px;height:40px;border:3px solid #f0e6ff;border-top-color:#522676;border-radius:50%;animation:sf-spin 0.8s linear infinite;"></div><span style="color:#888;font-size:.85rem;">${msg}</span></div><style>@keyframes sf-spin{to{transform:rotate(360deg);}}</style></td></tr>`;
+
+    const intentosMax = 3;
+    for (let intento = 1; intento <= intentosMax; intento++) {
+        if (tbody) tbody.innerHTML = spinner(intento === 1 ? "Cargando reservas..." : `Reintentando conexión (${intento}/${intentosMax})...`);
+        try {
+            const res = await fetch(`${BASE_URL}/reservas`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) {
+                reservasCache = await res.json();
+                renderizarTablaReservas(reservasCache);
+                return;
+            }
+            console.warn(`GET /reservas → ${res.status}`);
+        } catch (err) {
+            console.warn(`Intento ${intento} fallido:`, err.message);
         }
-        console.warn(`GET /reservas → ${res.status}`);
-    } catch (err) {
-        console.warn("Error cargando reservas desde API:", err.message);
+        if (intento < intentosMax) await new Promise(r => setTimeout(r, 3000));
     }
-    renderizarTablaReservas([]);
+
+    // Tras todos los intentos fallidos
+    if (tbody) tbody.innerHTML = `
+        <tr><td colspan="8">
+          <div style="display:flex;flex-direction:column;align-items:center;padding:2rem;gap:1rem;">
+            <i class="fa-solid fa-circle-exclamation fa-2x" style="color:#d97706;"></i>
+            <p style="color:#555;font-size:.9rem;margin:0;text-align:center;">No se pudieron cargar las reservas.<br>El servidor puede estar iniciando.</p>
+            <button id="btn-reintentar-reservas" style="background:#522676;color:#fff;border:none;border-radius:8px;padding:.5rem 1.4rem;font-size:.88rem;font-weight:500;cursor:pointer;">
+              <i class="fa-solid fa-rotate-right"></i> Reintentar
+            </button>
+          </div>
+        </td></tr>`;
+    document.getElementById("btn-reintentar-reservas")
+        ?.addEventListener("click", () => cargarReservasDesdeAPI());
 }
 
 export function initListaReservas() {

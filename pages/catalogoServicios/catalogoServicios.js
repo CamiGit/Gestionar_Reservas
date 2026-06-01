@@ -162,14 +162,14 @@ async function renderizarCatalogo() {
     const container = document.getElementById('cards-container');
     if (!container) return;
 
-    container.innerHTML     = '<p class="text-center text-muted py-5">Cargando servicios...</p>';
     container.style.display = 'block';
+    sfLoader.show('cards-container', 'Cargando servicios...');
 
     try {
         _serviciosActivos = await fetchServicios();
     } catch (err) {
         console.error('Error al cargar servicios:', err);
-        container.innerHTML = '<p class="text-center text-danger py-5">No se pudieron cargar los servicios. Intenta de nuevo más tarde.</p>';
+        container.innerHTML = '<p class="text-center text-muted py-5">No se pudieron cargar los servicios. Intenta de nuevo más tarde.</p>';
         return;
     }
 
