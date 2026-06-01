@@ -40,7 +40,7 @@ function validarFormulario(nombre, descripcion, precio) {
 
 export function initFormulario(onServicioGuardado) {
   let imagenURL = "";
-const BASE_URL = "http://localhost:8080";
+const BASE_URL = "https://backend-style-factory.onrender.com";
  // const BASE_URL = (
    // window.BASE_URL || "https://backend-style-factory.onrender.com"
  // ).replace(/\/$/, "");
