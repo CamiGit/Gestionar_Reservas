@@ -1,4 +1,5 @@
 // Verifica que el nombre no esté vacío
+const BASE_URL = "https://backend-style-factory.onrender.com"
 function validarNombre(nombre) {
     return nombre.trim() !== '';
 }

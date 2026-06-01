@@ -1,3 +1,4 @@
+const BASE_URL = "https://backend-style-factory.onrender.com"
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('formLogin');
 
@@ -26,6 +27,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (!isValid) return;
+       
+        
 
         try {
             const respuesta = await fetch(BASE_URL + '/auth/login', {

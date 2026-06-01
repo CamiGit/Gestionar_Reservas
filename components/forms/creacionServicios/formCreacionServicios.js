@@ -1,14 +1,7 @@
-import { productos } from "/pages/catalogoServicios/catalogoServicios.js";
 
 let listaDeServicios =
   JSON.parse(localStorage.getItem("Lista de Servicios")) || [];
 
-if (listaDeServicios.length == 0) {
-  productos.forEach(function (elemento) {
-    listaDeServicios.push(elemento);
-  });
-  localStorage.setItem("Lista de Servicios", JSON.stringify(listaDeServicios));
-}
 
 function validar(valor) {
   return valor.trim() !== "";
@@ -47,10 +40,10 @@ function validarFormulario(nombre, descripcion, precio) {
 
 export function initFormulario(onServicioGuardado) {
   let imagenURL = "";
-
-  const BASE_URL = (
-    window.BASE_URL || "https://backend-style-factory.onrender.com"
-  ).replace(/\/$/, "");
+const BASE_URL = "http://localhost:8080";
+ // const BASE_URL = (
+   // window.BASE_URL || "https://backend-style-factory.onrender.com"
+ // ).replace(/\/$/, "");
   const botonEnviar = document.querySelector(".btn-enviar");
   const inputImagen = document.getElementById("inputImagen");
   const preview = document.getElementById("preview");
@@ -93,17 +86,38 @@ export function initFormulario(onServicioGuardado) {
     if (esValido) {
       const listaActual =
         JSON.parse(localStorage.getItem("Lista de Servicios")) || [];
-
       if (esEdicion) {
         listaActual[editIndex] = {
-          ...listaActual[editIndex],
-          nombre,
-          descripcion,
-          precio,
-          status,
-          imagen: imagenURL || listaActual[editIndex].imagen,
+          ...listaActual[editIndex], 
+          nombre: nombre,
+          descripcion: descripcion,
+          precio: Number(precio),
+          urlImagen: imagenURL || listaActual[editIndex].urlImagen,
+          estado: status === "true"
         };
-        localStorage.setItem("Lista de Servicios", JSON.stringify(listaActual));
+    
+        try {
+          const servicioAEditar = listaActual[editIndex];
+          const token = JSON.parse(localStorage.getItem("usuarioLogueado"))?.token || "";
+          const respuesta = await fetch(`${BASE_URL}/servicios/${servicioAEditar.id}`, {  
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              "authorization": `Bearer ${token}`,
+            },
+            body: JSON.stringify(listaActual[editIndex]),
+          });
+          if (!respuesta.ok) {
+            const errorData = await respuesta.json().catch(() => ({}));
+            throw new Error(
+              errorData.message || "No se pudo actualizar el servicio.",
+            );
+          }
+        } catch (error) {
+          console.error("Error actualizando servicio:", error);
+          alert(error.message || "Error al actualizar el servicio");
+          return;
+        }
         alert("Servicio Actualizado");
 
         const modal = bootstrap.Modal.getInstance(
@@ -138,7 +152,7 @@ export function initFormulario(onServicioGuardado) {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
+                "Authorization": `Bearer ${token}`,
               },
               body: JSON.stringify(servicio),
             });
@@ -179,7 +193,7 @@ export function initFormulario(onServicioGuardado) {
           }
         } else {
           alert("El Servicio ya Existe");
-        }
+        }  
       }
 
       document.getElementById("editIndex").value = "";

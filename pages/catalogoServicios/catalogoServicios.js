@@ -59,7 +59,7 @@ if (document.getElementById('cards-container')) {
 
 let btnReservar;
 
-const productos = [
+/**const productos = [
     { id: 1, nombre: "Corte de Cabello Premium", descripcion: "Corte moderno con técnicas personalizadas según tu tipo de cabello.", precio: 45000, imagen: "https://res.cloudinary.com/diq2bkb49/image/upload/v1776957776/cortePremium_engl79.png", status: true },
     { id: 2, nombre: "Tinte y Coloración", descripcion: "Coloración de alta calidad con marcas premium. Resultados duraderos.", precio: 120000, imagen: "https://res.cloudinary.com/diq2bkb49/image/upload/v1776957782/tinteColoracion_xlsf5v.png", status: true },
     { id: 3, nombre: "Tratamiento de Keratina", descripcion: "Alisado profundo que elimina el frizz y deja el cabello sedoso.", precio: 180000, imagen: "https://res.cloudinary.com/diq2bkb49/image/upload/v1776957777/keratina_bjqvof.png", status: true },
@@ -70,7 +70,7 @@ const productos = [
     { id: 8, nombre: "Cepillado Brasileño", descripcion: "Alisado progresivo que reduce el volumen y da brillo.", precio: 160000, imagen: "https://res.cloudinary.com/diq2bkb49/image/upload/v1776957775/cepilladoBrasile%C3%B1o_ela99r.png", status: true },
     { id: 9, nombre: "Maquillaje Profesional", descripcion: "Maquillaje para ocasiones especiales con productos de alta calidad.", precio: 90000, imagen: "https://res.cloudinary.com/diq2bkb49/image/upload/v1776957779/maquillajeProfesional_h9vo1k.png", status: true },
     { id: 10, nombre: "Limpieza Facial", descripcion: "Tratamiento facial profundo para eliminar impurezas y revitalizar.", precio: 70000, imagen: "https://res.cloudinary.com/diq2bkb49/image/upload/v1776957778/limpiezaFacial_fmvrnn.png", status: true }
-];
+]; */
 
 /**
  * Renderiza el catálogo de servicios en el contenedor correspondiente
@@ -82,15 +82,18 @@ function renderizarCatalogo() {
         console.error("No se encontró el contenedor 'cards-container'");
         return;
     }
-
-    const lista = JSON.parse(localStorage.getItem("Lista de Servicios")) || productos;
-    const productosActivos = lista.filter(producto => producto.status === true || producto.status === "true");
-
+ //console para traer el array de servicios desde localStorage
+    console.log("Servicios obtenidos de localStorage:", JSON.parse(localStorage.getItem("Lista de Servicios")));
+    const lista = JSON.parse(localStorage.getItem("Lista de Servicios")) || [];
+    const productosActivos = lista.filter(producto => producto.estado === true || producto.estado === "true");
+     
+    console.log("Productos activos filtrados:", productosActivos);
     const html = productosActivos.map(producto => {
+        console.log("Producto activo:", producto);
         const precioFormateado = Number(producto.precio).toLocaleString('es-CO');
         return `
             <div class="card-servicio">
-                <img src="${producto.imagen}" alt="${producto.nombre}" class="card-imagen">
+                <img src="${producto.urlImagen}" alt="${producto.nombre}" class="card-imagen">
                 <div class="card-contenido">
                     <h3 class="card-titulo">${producto.nombre}</h3>
                     <p class="card-descripcion">${producto.descripcion}</p>
@@ -106,7 +109,7 @@ function renderizarCatalogo() {
     document.querySelectorAll('.btn-reservar').forEach(boton => {
         boton.addEventListener('click', function () {
             const id = parseInt(this.getAttribute('data-id'));
-            const listaActual = JSON.parse(localStorage.getItem("Lista de Servicios")) || productos;
+            const listaActual = JSON.parse(localStorage.getItem("Lista de Servicios")) || [];
             const productoSeleccionado = listaActual.find(p => p.id === id);
 
             // Guarda el servicio seleccionado para la reserva
@@ -119,4 +122,4 @@ function renderizarCatalogo() {
 
 document.addEventListener('DOMContentLoaded', renderizarCatalogo);
 
-export { productos, btnReservar };
+export { btnReservar };

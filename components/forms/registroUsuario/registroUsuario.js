@@ -3,6 +3,7 @@
  * Verifica longitud, mayúsculas, minúsculas, números y caracteres especiales
  * Actualiza la interfaz visual de requisitos a medida que el usuario escribe
  */
+const BASE_URL = "https://backend-style-factory.onrender.com"
 function validarRequisitosPassword() {
   const password = document.getElementById("password").value;
 

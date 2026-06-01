@@ -5,8 +5,9 @@ let reservaActual = {
   hora: "2:00 PM",
 };
 
-let elementos = {};
+const BASE_URL = "https://backend-style-factory.onrender.com"
 
+let elementos = {};
 document.addEventListener("DOMContentLoaded", () => {
   elementos = {
     confServicio: document.getElementById("confServicio"),
@@ -62,10 +63,10 @@ function actualizarFechaHora(fecha, hora) {
   renderizar();
 }
 
-function confirmarReserva() {
+async function confirmarReserva() {
   const servicio = JSON.parse(localStorage.getItem('servicioSeleccionado'));
   const usuarioLogueado = JSON.parse(localStorage.getItem('usuarioLogueado'));
-
+  const objReserva = JSON.parse(localStorage.getItem('resumenReserva'));
   const nuevaReserva = {
     cliente: usuarioLogueado?.nombre ?? 'Invitado',
     servicio: {
@@ -76,6 +77,35 @@ function confirmarReserva() {
     fecha: reservaActual.fecha,
     hora: reservaActual.hora
   };
+
+  const token = usuarioLogueado.token;
+    try {
+       const resumenReserva = {
+        fecha: objReserva.fecha ,
+        hora: objReserva.hora,
+        estado: true,
+        usuarioId: objReserva.estilista.idUsuario,
+        empleadoId: objReserva.estilista.idEmpleado,
+        servicioId: objReserva.idServicio
+      }
+
+      const response = await fetch(`${BASE_URL}/reservas`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(resumenReserva)
+      });
+      if (!response.ok) {
+        throw new Error('Error al crear la reserva');
+      }
+      const data = await response.json();
+      console.log('Reserva creada:', data);
+
+    } catch (error) {
+      console.error('Error:', error);
+    }
 
   const reservas = JSON.parse(localStorage.getItem("reservas")) || [];
 
@@ -105,10 +135,12 @@ const modalConfirmacion = new bootstrap.Modal(document.getElementById("modalConf
 modalConfirmacion.show();
 
 // Cuando se cierre el modal, redirige a Acerca de Nosotros
-document.getElementById("modalConfirmacionReserva")
+/**
+ * document.getElementById("modalConfirmacionReserva")
   .addEventListener("hidden.bs.modal", () => {
     window.location.href = '/pages/aboutUs/aboutUs.html';
   });
+ */
 
   return nuevaReserva;
 }

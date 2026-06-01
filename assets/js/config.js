@@ -1,2 +1,2 @@
-const BASE_URL = "https://backend-style-factory.onrender.com"
+//const BASE_URL = "https://backend-style-factory.onrender.com"
 
