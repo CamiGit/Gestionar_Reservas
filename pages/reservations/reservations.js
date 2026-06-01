@@ -74,7 +74,7 @@ function renderizarReservas() {
       <div class="texto col">
         <div class="texto-header">
           <h1>${servicio.nombre}</h1>
-          <a href="./pages/catalogoServicios/catalogoServicios.html" class="btn-cambiar-servicio">
+          <a href="/pages/catalogoServicios/catalogoServicios.html" class="btn-cambiar-servicio">
             ← Cambiar servicio
           </a>
         </div>
