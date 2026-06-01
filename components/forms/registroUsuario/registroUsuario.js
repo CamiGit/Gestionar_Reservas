@@ -7,98 +7,74 @@ const BASE_URL = "https://backend-style-factory.onrender.com"
 function validarRequisitosPassword() {
   const password = document.getElementById("password").value;
 
-  const reqLongitud = document.getElementById("req-longitud");
-  const reqMayuscula = document.getElementById("req-mayuscula");
-  const reqMinuscula = document.getElementById("req-minuscula");
-  const reqNumero = document.getElementById("req-numero");
-  const reqEspecial = document.getElementById("req-especial");
+    function mostrarError(elementId, mensaje) {
+        var errorSpan = document.getElementById(elementId);
+        if (errorSpan) {
+            errorSpan.textContent = mensaje;
+            errorSpan.style.display = 'block';
+        }
+    }
 
-  const longitudValida = password.length >= 8;
-  const mayusculaValida = /[A-Z]/.test(password);
-  const minusculaValida = /[a-z]/.test(password);
-  const numeroValida = /[0-9]/.test(password);
-  const especialValida = /[@#$%*!?\-_]/.test(password);
+    function mostrarErrorGeneral(mensaje) {
+        var mensajeError = document.getElementById('mensajeError');
+        if (mensajeError) {
+            mensajeError.textContent = mensaje;
+            mensajeError.style.display = 'block';
+            mensajeError.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            return;
+        }
+        mostrarError('errorGeneral', mensaje);
+    }
 
-  if (reqLongitud) {
-    reqLongitud.innerHTML =
-      (longitudValida ? "✓" : "✗") + " Mínimo 8 caracteres";
-    reqLongitud.className =
-      "requisito " + (longitudValida ? "valid" : "invalid");
-  }
-  if (reqMayuscula) {
-    reqMayuscula.innerHTML =
-      (mayusculaValida ? "✓" : "✗") + " Al menos una letra mayúscula";
-    reqMayuscula.className =
-      "requisito " + (mayusculaValida ? "valid" : "invalid");
-  }
-  if (reqMinuscula) {
-    reqMinuscula.innerHTML =
-      (minusculaValida ? "✓" : "✗") + " Al menos una letra minúscula";
-    reqMinuscula.className =
-      "requisito " + (minusculaValida ? "valid" : "invalid");
-  }
-  if (reqNumero) {
-    reqNumero.innerHTML = (numeroValida ? "✓" : "✗") + " Al menos un número";
-    reqNumero.className = "requisito " + (numeroValida ? "valid" : "invalid");
-  }
-  if (reqEspecial) {
-    reqEspecial.innerHTML =
-      (especialValida ? "✓" : "✗") +
-      " Al menos un carácter especial (@, #, $, %, *, !, ?, -, _)";
-    reqEspecial.className =
-      "requisito " + (especialValida ? "valid" : "invalid");
-  }
+    function limpiarErrores() {
+        document.querySelectorAll('.error').forEach(function (e) {
+            e.textContent = '';
+            e.style.display = 'none';
+        });
+        var mensajeError = document.getElementById('mensajeError');
+        if (mensajeError) {
+            mensajeError.textContent = '';
+            mensajeError.style.display = 'none';
+        }
+    }
 
-  return (
-    longitudValida &&
-    mayusculaValida &&
-    minusculaValida &&
-    numeroValida &&
-    especialValida
-  );
-}
+    function ocultarMensajeExito() {
+        var exito = document.getElementById('mensajeExito');
+        if (exito) exito.style.display = 'none';
+    }
 
-/**
- * Inicializa el formulario de registro y configura los eventos
- */
-document.addEventListener("DOMContentLoaded", function () {
-  const form = document.getElementById("formRegistro");
-  if (!form) return;
+    function validarRequisitosPassword() {
+        var passwordInput = document.getElementById('password');
+        if (!passwordInput) return false;
 
-  function notificarAltura() {
-    window.parent.postMessage({ iframeHeight: document.body.scrollHeight }, "*");
-  }
-  new ResizeObserver(notificarAltura).observe(document.body);
-  notificarAltura();
+        var password = passwordInput.value;
+        var requisitos = [
+            { id: 'req-longitud', valido: password.length >= 8 },
+            { id: 'req-mayuscula', valido: /[A-Z]/.test(password) },
+            { id: 'req-minuscula', valido: /[a-z]/.test(password) },
+            { id: 'req-numero', valido: /[0-9]/.test(password) },
+            { id: 'req-especial', valido: /[@#$%*!?\-_]/.test(password) }
+        ];
+        var todosCumplidos = true;
+        requisitos.forEach(function (req) {
+            var elem = document.getElementById(req.id);
+            if (elem) {
+                elem.innerHTML =
+                    (req.valido ? '✓' : '✗') + ' ' + elem.textContent.replace(/^[✓✗]\s*/, '');
+                elem.className = 'requisito ' + (req.valido ? 'valid' : 'invalid');
+            }
+            if (!req.valido) todosCumplidos = false;
+        });
+        return todosCumplidos;
+    }
 
-  const passwordInput = document.getElementById("password");
-
-  if (passwordInput) {
-    passwordInput.addEventListener("input", validarRequisitosPassword);
-  }
-
-  document.querySelectorAll(".toggle-password").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      const input = document.getElementById(btn.dataset.target);
-      const isPassword = input.type === "password";
-      input.type = isPassword ? "text" : "password";
-      btn.querySelector(".icon-eye").style.display = isPassword ? "none" : "";
-      btn.querySelector(".icon-eye-off").style.display = isPassword ? "" : "none";
-    });
-  });
-
-  form.addEventListener("submit", async function (event) {
-    event.preventDefault();
-
-    limpiarErrores();
-
-    const nombre = document.getElementById("nombreCompleto").value.trim();
-    const email = document.getElementById("email").value.trim();
-    const telefono = document.getElementById("telefono").value.trim();
-    const password = document.getElementById("password").value;
-    const confirmPassword = document.getElementById("confirmPassword").value;
-
-    let isValid = true;
+    function validarFormularioRegistro() {
+        var nombre = document.getElementById('nombreCompleto').value;
+        var email = document.getElementById('email').value;
+        var telefono = document.getElementById('telefono').value;
+        var password = document.getElementById('password').value;
+        var confirmPassword = document.getElementById('confirmPassword').value;
+        var isValid = true;
 
         if (typeof FormValidaciones === 'undefined') {
             mostrarErrorGeneral('No se cargaron las validaciones. Recargue la página.');
@@ -219,7 +195,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 rol: 'CLIENTE'
             };
 
-            fetch(API_REGISTRO + '/auth/register', {
+            fetch(BASE_URL + '/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestBody)
@@ -272,4 +248,4 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
         initRegistroForm();
     }
-})();
+}
