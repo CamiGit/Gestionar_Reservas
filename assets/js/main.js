@@ -1,7 +1,7 @@
 /**
  * Inicializa el usuario administrador por defecto en el sistema
  * Verifica si ya existe un administrador en localStorage, si no existe lo crea
- * Credenciales: admin@stylefactory.com / admin123
+ * Credenciales: admin@stylefactory.com / admin123/Admin123!
  */
 function inicializarAdmin() {
     const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
@@ -80,10 +80,16 @@ fetch('/components/navbar/navbar.html')
             // 2. Obtenemos el nombre del archivo del href del enlace
             let rutaEnlace = enlace.getAttribute('href').split("/").pop();
             
+<<<<<<< HEAD
             
             if(rutaEnlace == rutaActual){
                 enlace.classList.add('active');
 
+=======
+            if(rutaEnlace == rutaActual){
+                enlace.classList.add('active');
+                
+>>>>>>> Dev
              }else {
                  enlace.classList.remove('active');
              }
@@ -93,7 +99,7 @@ fetch('/components/navbar/navbar.html')
     .catch(err => console.error('Error cargando el navbar:', err));
 
 // Cargar banner de inicio
-fetch('components/bannerInicio/bannerInicio.html')
+fetch('/components/bannerInicio/bannerInicio.html')
     .then(res => res.text())
     .then(html => {
         document.getElementById('bannerInicio-placeholder').innerHTML = html;
@@ -138,7 +144,7 @@ fetch('components/review/review.html')
     .catch(err => console.error('Error cargando los comentarios:', err));
 
 // Cargar footer
-fetch('components/footer/footer.html')
+fetch('/components/footer/footer.html')
     .then(res => res.text())
     .then(html => {
         document.getElementById('footer-placeholder').innerHTML = html;

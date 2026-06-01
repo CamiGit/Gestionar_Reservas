@@ -78,4 +78,27 @@
     .beneficio {
         margin-bottom: 25px;
     }
+
+    .container-main {
+        width: 100%;
+    }
+
+    .form-iframe {
+        min-height: 720px;
+    }
+}
+
+@media (max-width: 576px) {
+    .info-registro {
+        padding: 24px 20px;
+    }
+
+    .form-iframe {
+        min-height: 680px;
+    }
+
+    .beneficio i {
+        font-size: 26px;
+        min-width: 40px;
+    }
 }
