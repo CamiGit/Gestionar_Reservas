@@ -1,7 +1,7 @@
 /**
  * Inicializa el usuario administrador por defecto en el sistema
  * Verifica si ya existe un administrador en localStorage, si no existe lo crea
- * Credenciales: admin@stylefactory.com / admin123
+ * Credenciales: admin@stylefactory.com / admin123/Admin123!
  */
 function inicializarAdmin() {
     const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
@@ -18,7 +18,7 @@ function inicializarAdmin() {
             fechaRegistro: new Date().toISOString()
         });
         localStorage.setItem('usuarios', JSON.stringify(usuarios));
-        console.log("Usuario administrador creado por defecto");
+      
     }
 }
 
@@ -80,10 +80,10 @@ fetch('/components/navbar/navbar.html')
             // 2. Obtenemos el nombre del archivo del href del enlace
             let rutaEnlace = enlace.getAttribute('href').split("/").pop();
             
-            console.log("Comparando:", rutaEnlace, "con", rutaActual);
+            
             if(rutaEnlace == rutaActual){
                 enlace.classList.add('active');
-                console.log("Agregando clase activo")
+
              }else {
                  enlace.classList.remove('active');
              }

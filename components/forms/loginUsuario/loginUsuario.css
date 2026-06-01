@@ -27,6 +27,7 @@ body {
 /* Estilos base para inputs */
 .input-group input {
     width: 100%;
+    box-sizing: border-box;
     border: none;
     border-bottom: 2px solid #D69E2E;
     outline: none;
@@ -62,7 +63,7 @@ body {
 
 /* Mensajes de error */
 .error {
-    display: block;
+    display: none;
     color: red;
     font-size: 12px;
     margin-top: 5px;
@@ -92,17 +93,52 @@ body {
     border: 1px solid #AE8D3E;
 }
 
-/* Mensaje de bienvenida */
+/* Aviso de sesión iniciada: tono editorial, no apariencia de botón */
 .mensaje-bienvenida {
-    background: #D69E2E;
-    color: #522676;
-    text-align: center;
-    padding: 15px;
-    border-radius: 10px;
-    margin-top: 20px;
-    margin-bottom: 10px;
-    font-weight: bold;
+    display: none;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1.35rem;
+    padding: 0.9rem 1rem;
+    background: linear-gradient(135deg, #faf8fc 0%, #f3eef8 100%);
+    border: 1px solid rgba(174, 141, 62, 0.28);
+    border-left: 3px solid #AE8D3E;
+    border-radius: 6px;
+    color: #4a3d5c;
+    font-size: 0.92rem;
+    font-weight: 500;
+    line-height: 1.45;
     font-family: 'Montserrat', sans-serif;
+    box-shadow: 0 2px 10px rgba(82, 38, 118, 0.07);
+}
+
+.mensaje-bienvenida-icon {
+    flex-shrink: 0;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 50%;
+    border: 1px solid rgba(174, 141, 62, 0.45);
+    background: rgba(174, 141, 62, 0.12);
+    position: relative;
+}
+
+.mensaje-bienvenida-icon::after {
+    content: '';
+    position: absolute;
+    left: 0.42rem;
+    top: 0.22rem;
+    width: 0.35rem;
+    height: 0.6rem;
+    border: solid #AE8D3E;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.mensaje-bienvenida-texto strong {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    color: #522676;
+    letter-spacing: 0.02em;
 }
 
 /* Mensaje de error general */
@@ -137,4 +173,34 @@ body {
 .registro-link a:hover {
     color: #AE8D3E;
     text-decoration: underline;
+}
+
+@media (max-width: 576px) {
+    body {
+        padding: 16px 12px;
+    }
+
+    .form-container {
+        max-width: 100%;
+    }
+
+    .titulo-form {
+        font-size: 1.35rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .input-group {
+        margin-bottom: 1.75rem;
+    }
+
+    .btn-login {
+        width: 100%;
+        max-width: 280px;
+    }
+
+    .mensaje-bienvenida,
+    .mensaje-error {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
 }

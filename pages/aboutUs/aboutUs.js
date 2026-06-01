@@ -45,10 +45,31 @@ fetch('/components/navbar/navbar.html')
         if (btnCerrarSesion) {
             btnCerrarSesion.addEventListener('click', cerrarSesion);
         }
+        
+        // Funcionalidad para resaltar el enlace activo en el navbar
+        const enlaces = document.querySelectorAll('.nav-link');
+        // 1. Obtenemos el nombre del archivo actual (ej: "servicios.html")
+        // Si estamos en la raíz, window.location.pathname devolverá "/" o "index.html"
+        let rutaActual = window.location.pathname.split("/").pop();
+        if (rutaActual === "" || rutaActual === "/") {
+            rutaActual = "index.html";
+        }
+        enlaces.forEach(enlace => {
+            // 2. Obtenemos el nombre del archivo del href del enlace
+            let rutaEnlace = enlace.getAttribute('href').split("/").pop();
+            
+            if(rutaEnlace == rutaActual){
+                enlace.classList.add('active');
+                
+             }else {
+                 enlace.classList.remove('active');
+             }
+
+        });
     })
     .catch(err => console.error('Error cargando el navbar:', err));
 
-fetch('../../components/footer/footer.html')
+fetch('/components/footer/footer.html')
     .then(res => res.text())
     .then(html => {
         document.getElementById('footer-placeholder').innerHTML = html;

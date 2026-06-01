@@ -1,18 +1,30 @@
-import { productos } from "../../catalogoServicios/catalogoServicios.js";
+
 import { initFormulario } from "../../../components/forms/creacionServicios/formCreacionServicios.js";
 
 const KEY = "Lista de Servicios";
 let indexAEliminar = null;
+const BASE_URL = "https://backend-style-factory.onrender.com"
+export async function renderizarTabla() {
 
-export function renderizarTabla() {
+  try {
+    const respuesta = await fetch(BASE_URL + "/servicios");
+    if (!respuesta.ok) {
+      throw new Error("Error al obtener los servicios");
+    }
+    const servicios = await respuesta.json();
+    localStorage.setItem(KEY, JSON.stringify(servicios));
+  } catch (error) {
+    console.error("Error al cargar los servicios desde el backend:", error);
+  }   
+  
   const servicios = JSON.parse(localStorage.getItem(KEY)) || [];
   const tbody = document.getElementById("tabla-servicios");
   if (!tbody) return;
   tbody.innerHTML = "";
 
   servicios.forEach((servicio, index) => {
-    const estadoClase = servicio.status === true || servicio.status === "true" ? "confirmada" : "cancelada";
-    const estadoTexto = servicio.status === true || servicio.status === "true" ? "Activo" : "Inactivo";
+    const estadoClase = servicio.estado === true || servicio.estado === "true" ? "confirmada" : "cancelada";  
+    const estadoTexto = servicio.estado === true || servicio.estado === "true" ? "Activo" : "Inactivo";
     const id = servicio.id ?? index + 1;
 
     const fila = `
@@ -42,7 +54,7 @@ export function renderizarTabla() {
 export function initListaServicios() {
   const servicios = JSON.parse(localStorage.getItem(KEY)) || [];
   if (servicios.length === 0) {
-    productos.forEach((elemento) => servicios.push(elemento));
+  
     localStorage.setItem(KEY, JSON.stringify(servicios));
   }
 
@@ -64,32 +76,65 @@ export function initListaServicios() {
     });
   }
 
-  document.addEventListener("click", function (e) {
+  //consumir el serviciopar eliminar 
+  document.addEventListener("click",  async function (e) {
     // Botón eliminar
+   
     const btnEliminar = e.target.closest(".btn-eliminar");
+  
     if (btnEliminar) {
       indexAEliminar = btnEliminar.dataset.index;
+        const servicio = JSON.parse(localStorage.getItem(KEY)) || [];
+        const servicioAEliminar = servicio[indexAEliminar];
+        const token = JSON.parse(localStorage.getItem("usuarioLogueado"))?.token || "";
+        try {
+          const respuesta = await fetch(BASE_URL + "/servicios/" + servicioAEliminar.id, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+            }
+          });
+
+          if (!respuesta.ok) {
+            const errorData = await respuesta.json().catch(() => ({}));
+            throw new Error(
+              errorData.message || "No se pudo eliminar el servicio."
+            );
+          }
+        } catch (error) {
+          console.error("Error al intentar eliminar el servicio:", error);
+          alert(error.message || "Error al eliminar el servicio");
+          return;
+        }
       const modal = new bootstrap.Modal(document.getElementById("modalEliminar"));
       modal.show();
       return;
     }
 
-    // Botón editar
-    const btnEditar = e.target.closest(".btn-editar");
-    if (btnEditar) {
-      const index = btnEditar.dataset.index;
-      const lista = JSON.parse(localStorage.getItem(KEY)) || [];
-      const servicio = lista[index];
+    // Botón editar  
 
-      document.getElementById("nombre").value = servicio.nombre;
-      document.getElementById("descripcion").value = servicio.descripcion;
-      document.getElementById("precio").value = servicio.precio;
-      document.getElementById("editIndex").value = index;
-      document.querySelector(".btn-enviar").textContent = "Guardar Cambios";
+    try {
+         const btnEditar = e.target.closest(".btn-editar");
+        
+      if (btnEditar) {
+        const index = btnEditar.dataset.index;
+        const servicio = JSON.parse(localStorage.getItem(KEY)) || [];
+        const servicioAEditar = servicios[index];
 
-      const modal = new bootstrap.Modal(document.getElementById("exampleModal"));
-      modal.show();
+        document.getElementById("nombre").value = servicioAEditar.nombre;
+        document.getElementById("descripcion").value = servicioAEditar.descripcion;
+        document.getElementById("precio").value = servicioAEditar.precio;
+        document.getElementById("preview").src = servicioAEditar.urlImagen;
+        document.getElementById("preview").style.display = "block";
+        document.getElementById("editIndex").value = index;
+        const modal = new bootstrap.Modal(document.getElementById("exampleModal"));
+        modal.show();
+      }
+    } catch (error) {
+      console.error("Error al intentar editar el servicio:", error);
     }
+
   });
 
   const btnConfirmar = document.getElementById("btn-confirmar-eliminar");

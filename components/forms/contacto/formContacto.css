@@ -64,7 +64,7 @@ body {
 
 /* ERROR */
 .error {
-    display: block;
+    display: none;
     color: red;
     font-size: 12px;
     margin-top: 5px;
@@ -118,11 +118,18 @@ body {
 }
 @media(max-width:530px){
     .btn-enviar{
-        width: auto;
+        width: 100%;
+        max-width: 280px;
+        font-size: 1rem;
     }
     .form-container{
         width: 100%;
         margin: 0;
         padding: 0 10px;
+    }
+
+    .titulo-form {
+        font-size: 1.35rem;
+        text-align: center;
     }
 }

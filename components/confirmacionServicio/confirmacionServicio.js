@@ -6,8 +6,9 @@ let reservaActual = {
   hora: "2:00 PM",
 };
 
-let elementos = {};
+const BASE_URL = "https://backend-style-factory.onrender.com"
 
+let elementos = {};
 document.addEventListener("DOMContentLoaded", () => {
   elementos = {
     confServicio: document.getElementById("confServicio"),
@@ -76,14 +77,12 @@ async function confirmarReserva() {
   const servicioId  = servicio?.id ?? null;
   const token       = usuarioLogueado?.token ?? null;
 
-  // Fecha en formato "YYYY-MM-DD" (viene de fechaISO o se convierte desde "DD/MM/YYYY")
   let fechaISO = reservaActual.fechaISO;
   if (!fechaISO && reservaActual.fecha) {
     const partes = reservaActual.fecha.split('/');
     if (partes.length === 3) fechaISO = `${partes[2]}-${partes[1]}-${partes[0]}`;
   }
 
-  // Intentar guardar en la API si hay token e IDs disponibles
   if (token && usuarioId && empleadoId && servicioId && fechaISO) {
     try {
       const res = await fetch(`${BASE_URL}/reservas`, {

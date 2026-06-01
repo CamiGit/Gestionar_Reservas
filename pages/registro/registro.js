@@ -30,9 +30,12 @@ function cerrarSesion() {
 }
 
 // Cargar navbar y configurar eventos de sesión
-fetch('/components/navbar/navbar.html')
-    .then(res => res.text())
-    .then(html => {
+fetch('../../components/navbar/navbar.html')
+    .then(function (res) {
+        if (!res.ok) throw new Error('No se pudo cargar el navbar');
+        return res.text();
+    })
+    .then(function (html) {
         document.getElementById('header').innerHTML = html;
         actualizarNavbar();
         const btnCerrarSesion = document.getElementById('btnCerrarSesion');
@@ -40,7 +43,7 @@ fetch('/components/navbar/navbar.html')
             btnCerrarSesion.addEventListener('click', cerrarSesion);
         }
     })
-    .catch(err => console.error('Error cargando el navbar:', err));
+    .catch(function (err) { console.error('Error cargando el navbar:', err); });
 
 window.addEventListener('message', function (e) {
     if (e.data && e.data.iframeHeight) {
@@ -65,9 +68,12 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // Cargar footer
-fetch('/components/footer/footer.html')
-    .then(res => res.text())
-    .then(html => {
+fetch('../../components/footer/footer.html')
+    .then(function (res) {
+        if (!res.ok) throw new Error('No se pudo cargar el footer');
+        return res.text();
+    })
+    .then(function (html) {
         document.getElementById('footer-placeholder').innerHTML = html;
     })
-    .catch(err => console.error('Error cargando el footer:', err));
+    .catch(function (err) { console.error('Error cargando el footer:', err); });

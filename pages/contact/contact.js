@@ -40,17 +40,40 @@ function cerrarSesion() {
  * Carga el componente del navbar y configura la sesión del usuario
  * Inicializa el botón de cierre de sesión si el usuario está logueado
  */
-fetch('/components/navbar/navbar.html')
-    .then(res => res.text())
-    .then(html => {
+fetch('../../components/navbar/navbar.html')
+    .then(function (res) {
+        if (!res.ok) throw new Error('No se pudo cargar el navbar');
+        return res.text();
+    })
+    .then(function (html) {
         document.getElementById('header').innerHTML = html;
         actualizarNavbar();
         const btnCerrarSesion = document.getElementById('btnCerrarSesion');
         if (btnCerrarSesion) {
             btnCerrarSesion.addEventListener('click', cerrarSesion);
         }
+        // Funcionalidad para resaltar el enlace activo en el navbar
+        const enlaces = document.querySelectorAll('.nav-link');
+        // 1. Obtenemos el nombre del archivo actual (ej: "servicios.html")
+        // Si estamos en la raíz, window.location.pathname devolverá "/" o "index.html"
+        let rutaActual = window.location.pathname.split("/").pop();
+        if (rutaActual === "" || rutaActual === "/") {
+            rutaActual = "index.html";
+        }
+        enlaces.forEach(enlace => {
+            // 2. Obtenemos el nombre del archivo del href del enlace
+            let rutaEnlace = enlace.getAttribute('href').split("/").pop();
+            
+            if(rutaEnlace == rutaActual){
+                enlace.classList.add('active');
+                
+             }else {
+                 enlace.classList.remove('active');
+             }
+
+        });
     })
-    .catch(err => console.error('Error cargando el navbar:', err));
+    .catch(function (err) { console.error('Error cargando el navbar:', err); });
 
 /**
  * Carga el componente del mapa de Google Maps
@@ -79,8 +102,12 @@ fetch('../../components/maps/maps.html')
 fetch('../../components/forms/contacto/formContacto.html')
     .then(res => res.text())
     .then(html => {
-    document.getElementById('form-contacto').innerHTML = html;
-});
+        document.getElementById('form-contacto').innerHTML = html;
+        if (typeof initFormContacto === 'function') {
+            initFormContacto();
+        }
+    })
+    .catch(err => console.error('Error cargando el formulario de contacto:', err));
 
 /**
  * Carga el componente del footer en todas las páginas
