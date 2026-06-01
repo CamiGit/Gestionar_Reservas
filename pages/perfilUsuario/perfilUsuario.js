@@ -2,71 +2,13 @@
  *  perfilUsuario.js
  *
  *  Flujo:
- *    1. Leer token JWT del storage (guardado por el login)
- *    2. Extraer correo del claim `sub` del JWT
- *    3. GET /usuarios  → filtrar por correo → obtener perfil completo
- *    4. Reservas       → leer de localStorage["reservas"], filtrar por nombre
+ *    1. Token       → localStorage via sfSession.getToken()
+ *    2. Perfil base → Cache API via sfSession.getProfile()
+ *    3. GET /usuarios → obtener perfil completo y actualizar caché
+ *    4. Reservas    → GET /reservas filtradas por id de usuario
  * ========================================================= */
 
-/* ---------------------------------------------------------
- * 1. TOKEN
- * --------------------------------------------------------- */
-
-/*
- * Obtiene únicamente el token JWT del almacenamiento de sesión.
- * No se usa ningún dato de perfil guardado en localStorage/sessionStorage.
- */
-function getToken() {
-    const raw = localStorage.getItem('usuarioLogueado')
-             || sessionStorage.getItem('usuarioLogueado');
-    if (!raw) return null;
-    try {
-        const parsed = JSON.parse(raw);
-        return parsed?.token ?? null;
-    } catch {
-        return typeof raw === 'string' && raw.includes('.') ? raw : null;
-    }
-}
-
-function getStoredUsuarioLogueado() {
-    const raw = localStorage.getItem('usuarioLogueado')
-             || sessionStorage.getItem('usuarioLogueado');
-    if (!raw) return null;
-    try {
-        return JSON.parse(raw);
-    } catch {
-        return null;
-    }
-}
-
-/**
- * Decodifica el payload del JWT sin verificar firma.
- * Usado únicamente para extraer el correo del claim `sub`.
- */
-function parseJwtPayload(token) {
-    try {
-        const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-        const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
-        return JSON.parse(atob(padded));
-    } catch {
-        return null;
-    }
-}
-
-function getCorreoDesdeJWT(token) {
-    const payload = parseJwtPayload(token);
-    if (!payload) return null;
-
-    const sub = payload.sub;
-    if (typeof sub === 'string' && sub.includes('@')) {
-        return sub;
-    }
-    if (typeof sub === 'object' && sub !== null) {
-        return sub.email ?? sub.correo ?? null;
-    }
-
-    return payload.email ?? payload.correo ?? payload.user?.email ?? payload.usuario?.correo ?? null;
-}
+const BASE_URL = "https://backend-style-factory.onrender.com";
 
 /* ---------------------------------------------------------
  * 2. LLAMADAS A LA API
@@ -111,10 +53,12 @@ async function fetchReservasDeAPI(nombreUsuario, token) {
         return null;
     }
     const data = await res.json();
-    const lista = Array.isArray(data) ? data : data.reservas ?? data.data ?? [];
-    if (!nombreUsuario) return lista;
+    const lista = Array.isArray(data) ? data : (data.reservas ?? data.data ?? data.content ?? []);
+
+    if (!lista.length) return lista;
+
     return lista.filter(r =>
-        (r.nombreUsuario || '').toLowerCase() === nombreUsuario.toLowerCase()
+        (r.nombreUsuario ?? '').toLowerCase() === (nombreUsuario ?? '').toLowerCase()
     );
 }
 
@@ -284,28 +228,44 @@ function crearMetaSpan(iconClass, texto) {
 }
 
 function crearElementoReserva(r, idx) {
-    const nombreServicio = r.servicio?.nombre || r.nombreServicio || 'Servicio';
+    // El backend devuelve: nombreServicio, nombreEmpleado, nombreUsuario, fecha, hora, estado
+    const nombreServicio = r.nombreServicio || r.servicio?.nombre || 'Servicio';
+
     const precio = r.servicio?.precio != null
         ? '$' + Number(r.servicio.precio).toLocaleString('es-CO')
         : r.precio != null
         ? '$' + Number(r.precio).toLocaleString('es-CO')
         : '';
-    const profesional = r.empleado?.nombre || r.profesional?.nombre || r.nombreEmpleado || r.empleado || r.profesional || '';
 
+    const profesional = r.nombreEmpleado || r.empleado?.nombre || r.profesional?.nombre || '';
+
+    // fechaHora puede venir como "2026-06-01T09:00:00" (LocalDateTime del backend)
+    const fechaHoraRaw = r.fechaHora || r.fecha || r.fechaReserva || '';
     let fecha = 'Fecha no definida';
-    const fechaRaw = r.fecha || r.fechaReserva;
-    if (fechaRaw) {
-        const partes = String(fechaRaw).split('/');
-        const dateObj = partes.length === 3
-            ? new Date(`${partes[2]}-${partes[1]}-${partes[0]}`)
-            : new Date(fechaRaw);
-        fecha = isNaN(dateObj)
-            ? String(fechaRaw)
-            : dateObj.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+    let horaAPI = r.hora || r.horaReserva || '';
+
+    if (fechaHoraRaw) {
+        // Si contiene T, es LocalDateTime: extraer fecha y hora
+        if (String(fechaHoraRaw).includes('T')) {
+            const [fechaParte, horaParte] = String(fechaHoraRaw).split('T');
+            horaAPI = horaAPI || horaParte?.substring(0, 5);
+            const dateObj = new Date(fechaHoraRaw);
+            fecha = isNaN(dateObj)
+                ? fechaParte
+                : dateObj.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+        } else {
+            const partes = String(fechaHoraRaw).split('/');
+            const dateObj = partes.length === 3
+                ? new Date(`${partes[2]}-${partes[1]}-${partes[0]}`)
+                : new Date(fechaHoraRaw);
+            fecha = isNaN(dateObj)
+                ? String(fechaHoraRaw)
+                : dateObj.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
     }
 
-    const hora   = r.hora || r.horaReserva || '';
-    const estado = getEstadoMeta(r.estado || r.status || r.estadoReserva);
+    const hora   = horaAPI || r.hora || r.horaReserva || '';
+    const estado = getEstadoMeta(r.estado || r.status || r.estadoReserva || r.estadoReserva);
 
     const item = document.createElement('div');
     item.className = 'reserva-item';
@@ -377,7 +337,8 @@ function renderReservas(reservas) {
     }
 
     const ordenadas = [...reservas].sort((a, b) =>
-        new Date(b.fecha || b.fechaReserva || 0) - new Date(a.fecha || a.fechaReserva || 0)
+        new Date(b.fechaHora || b.fecha || b.fechaReserva || 0) -
+        new Date(a.fechaHora || a.fecha || a.fechaReserva || 0)
     );
 
     const frag = document.createDocumentFragment();
@@ -419,79 +380,61 @@ function renderStats(totalReservas) {
  * --------------------------------------------------------- */
 
 async function renderPerfilUsuario() {
-    const usuarioGuardado = getStoredUsuarioLogueado();
-    const token = getToken();
+    const token          = sfSession.getToken();
+    const perfilCacheado = await sfSession.getProfile();
 
-    if (usuarioGuardado) {
-        console.debug('perfilUsuario: renderizando usuario guardado mientras se valida la API.');
-        pintarPerfil(usuarioGuardado);
+    if (perfilCacheado) {
+        pintarPerfil(perfilCacheado);
         renderStats(0);
         renderReservas([]);
     }
 
     if (!token) {
-        if (!usuarioGuardado) {
-            mostrarPantallaNoSesion();
-        }
+        if (!perfilCacheado) mostrarPantallaNoSesion();
         return;
     }
 
-    const correo = getCorreoDesdeJWT(token);
-    console.debug('perfilUsuario: token encontrado?', !!token, 'correo extraído:', correo);
+    const correo = perfilCacheado?.correo || perfilCacheado?.email || null;
 
     try {
         let usuario = null;
         if (correo) {
             usuario = await fetchUsuarioPorCorreo(correo, token);
-            console.debug('perfilUsuario: usuario por correo obtenido:', usuario);
         }
-
         if (!usuario) {
             usuario = await fetchPerfilMe(token);
-            console.debug('perfilUsuario: usuario desde auth/me obtenido:', usuario);
         }
-
-        if (!usuario && usuarioGuardado) {
-            usuario = usuarioGuardado;
-            console.warn('perfilUsuario: usando usuario guardado en storage como fallback después de fallo de API.', usuario);
+        if (!usuario && perfilCacheado) {
+            usuario = perfilCacheado;
         }
-
         if (!usuario) {
             mostrarErrorPerfil('Usuario no encontrado en el sistema.');
             return;
         }
 
-        _usuarioIdActual = obtenerIdUsuario(usuario) ?? usuarioGuardado?.id ?? null;
+        _usuarioIdActual = obtenerIdUsuario(usuario) ?? perfilCacheado?.id ?? null;
 
-        const nombreUsuario = normalizeUsuario(usuario)?.nombre
-                           || normalizeUsuario(usuario)?.nombreCompleto
-                           || normalizeUsuario(usuario)?.fullName
-                           || usuarioGuardado?.nombre
-                           || null;
+        const usuarioNorm   = normalizeUsuario(usuario);
+        const telefonoAPI   = usuarioNorm?.telefono || usuarioNorm?.celular || usuarioNorm?.mobile || usuarioNorm?.telefonoContacto || '';
+        const telefonoFinal = telefonoAPI || perfilCacheado?.telefono || '';
+        const usuarioParaMostrar = { ...usuarioNorm, telefono: telefonoFinal };
+
+        // Sincronizar caché — normalizar rol a minúsculas para que el navbar lo compare correctamente
+        const rolNorm = (usuarioNorm?.rol ?? perfilCacheado?.rol ?? 'cliente').toLowerCase();
+        await sfSession.setProfile({ ...perfilCacheado, ...usuarioNorm, telefono: telefonoFinal, rol: rolNorm });
+
+        const nombreUsuario = usuarioNorm?.nombre || usuarioNorm?.nombreCompleto
+                           || usuarioNorm?.fullName || perfilCacheado?.nombre || null;
 
         let reservas = [];
         try {
             const reservasAPI = await fetchReservasDeAPI(nombreUsuario, token);
-            reservas = reservasAPI ?? getReservasLocales(nombreUsuario);
+            reservas = reservasAPI ?? [];
         } catch {
-            reservas = getReservasLocales(nombreUsuario);
+            reservas = [];
         }
 
-        const usuarioNorm = normalizeUsuario(usuario);
-        const telefonoAPI = usuarioNorm?.telefono || usuarioNorm?.celular || usuarioNorm?.mobile || usuarioNorm?.telefonoContacto || '';
-        const telefonoFinal = telefonoAPI || usuarioGuardado?.telefono || '';
-        const usuarioParaMostrar = { ...usuarioNorm, telefono: telefonoFinal };
-
-        // Sincronizar el localStorage con el teléfono obtenido de la API
-        if (telefonoFinal && usuarioGuardado && !usuarioGuardado.telefono) {
-            const storageUpdated = { ...usuarioGuardado, telefono: telefonoFinal };
-            if (localStorage.getItem('usuarioLogueado')) {
-                localStorage.setItem('usuarioLogueado', JSON.stringify(storageUpdated));
-            } else {
-                sessionStorage.setItem('usuarioLogueado', JSON.stringify(storageUpdated));
-            }
-        }
-
+        _reservasActuales = reservas;
         pintarPerfil(usuarioParaMostrar);
         renderStats(reservas.length);
         renderReservas(reservas);
@@ -507,6 +450,7 @@ async function renderPerfilUsuario() {
  * --------------------------------------------------------- */
 
 let _usuarioIdActual = null;
+let _reservasActuales = [];
 
 async function actualizarUsuarioEnAPI(id, datos, token) {
     const res = await fetch(`${BASE_URL}/usuarios/${id}`, {
@@ -525,8 +469,8 @@ function initModalEditarPerfil() {
     const modalEl = document.getElementById('modalEditarPerfil');
     if (!modalEl) return;
 
-    modalEl.addEventListener('show.bs.modal', () => {
-        const usuario = getStoredUsuarioLogueado() || {};
+    modalEl.addEventListener('show.bs.modal', async () => {
+        const usuario = await sfSession.getProfile() || {};
         document.getElementById('editNombre').value   = usuario.nombre   || '';
         document.getElementById('editCorreo').value   = usuario.correo   || '';
         document.getElementById('editTelefono').value = usuario.telefono || '';
@@ -550,16 +494,12 @@ function initModalEditarPerfil() {
         btn.disabled = true;
         btn.textContent = 'Guardando...';
 
-        const storageKey = localStorage.getItem('usuarioLogueado') ? 'localStorage' : 'sessionStorage';
-        const raw = localStorage.getItem('usuarioLogueado') || sessionStorage.getItem('usuarioLogueado');
-        let usuarioLocal = {};
-        try { usuarioLocal = JSON.parse(raw) || {}; } catch { /* noop */ }
+        const perfilActual = await sfSession.getProfile() || {};
+        const actualizado  = { ...perfilActual, nombre, correo, telefono };
 
-        const actualizado = { ...usuarioLocal, nombre, correo, telefono };
-
-        const token = getToken();
-        const idParaActualizar = _usuarioIdActual ?? usuarioLocal?.id ?? null;
-        const rolParaAPI = (usuarioLocal.rol ?? 'CLIENTE').toUpperCase();
+        const token = sfSession.getToken();
+        const idParaActualizar = _usuarioIdActual ?? perfilActual?.id ?? null;
+        const rolParaAPI = (perfilActual.rol ?? 'CLIENTE').toUpperCase();
 
         let apiExitosa = false;
         let errorCorreoDuplicado = false;
@@ -594,13 +534,10 @@ function initModalEditarPerfil() {
         inputCorreo.classList.remove('is-invalid');
         inputCorreo.nextElementSibling?.classList?.contains('invalid-feedback') && inputCorreo.nextElementSibling.remove();
 
-        if (storageKey === 'localStorage') {
-            localStorage.setItem('usuarioLogueado', JSON.stringify(actualizado));
-        } else {
-            sessionStorage.setItem('usuarioLogueado', JSON.stringify(actualizado));
-        }
+        await sfSession.setProfile(actualizado);
 
         pintarPerfil(actualizado);
+        renderReservas(_reservasActuales);
         btn.disabled = false;
         btn.textContent = 'Guardar cambios';
 

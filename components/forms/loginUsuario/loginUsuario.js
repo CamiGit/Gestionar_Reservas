@@ -1,6 +1,5 @@
-const BASE_URL = "https://backend-style-factory.onrender.com"
-document.addEventListener('DOMContentLoaded', function () {
-    const form = document.getElementById('formLogin');
+const BASE_URL = "https://backend-style-factory.onrender.com";
+(function () {
 
     function validarEmailLogin(email) {
         if (typeof FormValidaciones !== 'undefined') {
@@ -10,59 +9,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (valor === '') {
             return { valido: false, mensaje: 'El correo electrónico es obligatorio' };
         }
-
-        if (!isValid) return;
-       
-        
-
-        try {
-            const respuesta = await fetch(BASE_URL + '/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ correo, contrasena })
-            });
-
-            if (!respuesta.ok) {
-                const error = await respuesta.json().catch(() => ({}));
-                const mensajeError = document.getElementById('mensajeError');
-                mensajeError.textContent = error.message || 'Correo electrónico o contraseña incorrectos';
-                mensajeError.style.display = 'block';
-                return;
-            }
-
-            const datos = await respuesta.json();
-
-            const usuarioLogueado = {
-                id: datos.id ?? datos.data?.usuario?.id ?? datos.usuario?.id ?? null,
-                token: datos.token ?? datos.accessToken ?? datos.data?.token ?? datos.usuario?.token ?? '',
-                correo: datos.correo ?? datos.email ?? datos.data?.usuario?.correo ?? datos.usuario?.correo ?? datos.usuario?.email ?? '',
-                nombre: datos.nombre ?? datos.fullName ?? datos.data?.usuario?.nombre ?? datos.usuario?.nombre ?? datos.usuario?.nombreCompleto ?? '',
-                telefono: datos.telefono ?? datos.data?.usuario?.telefono ?? datos.usuario?.telefono ?? datos.usuario?.celular ?? '',
-                rol: (datos.rol ?? datos.role ?? datos.data?.usuario?.rol ?? datos.usuario?.rol ?? 'cliente').toLowerCase(),
-                fechaLogin: new Date().toISOString()
-            };
-
-            localStorage.setItem('usuarioLogueado', JSON.stringify(usuarioLogueado));
-            console.debug('usuarioLogueado guardado:', usuarioLogueado);
-
-            const rol = usuarioLogueado.rol;
-
-            const mensajeBienvenida = document.getElementById('mensajeBienvenida');
-            mensajeBienvenida.textContent = `¡Bienvenido/a, ${usuarioLogueado.nombre || 'usuario'}!`;
-            mensajeBienvenida.style.display = 'block';
-
-            setTimeout(() => {
-                if (rol === 'admin') {
-                    window.parent.location.href = '/pages/admin/panelDeControl/panelControl.html';
-                } else {
-                    window.parent.location.href = '/index.html';
-                }
-            }, 2000);
-
-        } catch (e) {
-            const mensajeError = document.getElementById('mensajeError');
-            mensajeError.textContent = 'Error de conexión. Intente nuevamente.';
-            mensajeError.style.display = 'block';
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(valor)) {
+            return { valido: false, mensaje: 'Ingrese un correo electrónico válido' };
         }
         return { valido: true };
     }
@@ -123,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 boton.textContent = 'Iniciando sesión...';
             }
 
-            fetch(API_LOGIN + '/auth/login', {
+            fetch(BASE_URL + '/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ correo: correo, contrasena: contrasena })
@@ -143,10 +92,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                     return respuesta.json();
                 })
-                .then(function (datos) {
-                    var usuarioLogueado = {
-                        token: datos.token ?? datos.accessToken ?? '',
-                        id: datos.id ?? datos.usuario?.id ?? null,
+                .then(async function (datos) {
+                    var token = datos.token ?? datos.accessToken ?? '';
+                    // Intentar extraer el id del JWT si el backend no lo devuelve explícitamente
+                    var jwtId = null;
+                    try {
+                        var payload = JSON.parse(atob(token.split('.')[1]));
+                        jwtId = payload.id ?? payload.idUsuario ?? payload.userId ?? null;
+                    } catch { /* noop */ }
+                    var perfil = {
+                        id: datos.id ?? datos.idUsuario ?? datos.userId ?? datos.usuario?.id ?? jwtId ?? null,
                         correo:
                             datos.correo ??
                             datos.email ??
@@ -162,7 +117,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         fechaLogin: new Date().toISOString()
                     };
 
-                    localStorage.setItem('usuarioLogueado', JSON.stringify(usuarioLogueado));
+                    await sfSession.setSession(token, perfil);
+                    var usuarioLogueado = perfil;
 
                     var mensajeBienvenida = document.getElementById('mensajeBienvenida');
                     if (mensajeBienvenida) {

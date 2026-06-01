@@ -1,7 +1,4 @@
 
-let listaDeServicios =
-  JSON.parse(localStorage.getItem("Lista de Servicios")) || [];
-
 
 function validar(valor) {
   return valor.trim() !== "";
@@ -87,38 +84,38 @@ const BASE_URL = "https://backend-style-factory.onrender.com";
       const listaActual =
         JSON.parse(localStorage.getItem("Lista de Servicios")) || [];
       if (esEdicion) {
-        listaActual[editIndex] = {
-          ...listaActual[editIndex], 
-          nombre: nombre,
-          descripcion: descripcion,
+        const servicioBase = listaActual[editIndex] || {};
+        const servicioActualizado = {
+          nombre,
+          descripcion,
           precio: Number(precio),
-          urlImagen: imagenURL || listaActual[editIndex].urlImagen,
-          estado: status === "true"
+          urlImagen: imagenURL || servicioBase.urlImagen || "",
+          tipoServicio: servicioBase.tipoServicio || "Personalizado",
+          estado: status === "true",
         };
-    
+
         try {
-          const servicioAEditar = listaActual[editIndex];
-          const token = JSON.parse(localStorage.getItem("usuarioLogueado"))?.token || "";
-          const respuesta = await fetch(`${BASE_URL}/servicios/${servicioAEditar.id}`, {  
+          const servicioId = servicioBase.id;
+          if (!servicioId) throw new Error("No se encontró el ID del servicio a editar.");
+          const token = sfSession.getToken() || "";
+          const respuesta = await fetch(`${BASE_URL}/servicios/${servicioId}`, {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
-              "authorization": `Bearer ${token}`,
+              "Authorization": `Bearer ${token}`,
             },
-            body: JSON.stringify(listaActual[editIndex]),
+            body: JSON.stringify(servicioActualizado),
           });
           if (!respuesta.ok) {
             const errorData = await respuesta.json().catch(() => ({}));
-            throw new Error(
-              errorData.message || "No se pudo actualizar el servicio.",
-            );
+            throw new Error(errorData.message || "No se pudo actualizar el servicio.");
           }
         } catch (error) {
           console.error("Error actualizando servicio:", error);
-          alert(error.message || "Error al actualizar el servicio");
+          await sfAlert(error.message || "Error al actualizar el servicio", "error");
           return;
         }
-        alert("Servicio Actualizado");
+        await sfAlert("Servicio actualizado correctamente.", "success");
 
         const modal = bootstrap.Modal.getInstance(
           document.getElementById("exampleModal"),
@@ -136,18 +133,13 @@ const BASE_URL = "https://backend-style-factory.onrender.com";
             descripcion: descripcion,
             urlImagen: imagenURL || "",
             precio: Number(precio),
-            tipoServicio: "Personalizado"
+            tipoServicio: "Personalizado",
+            estado: true
           };
 
-          console.log("Payload que se envía al crear servicio:", servicio);
 
           try {
-            const usuarioLogueado = JSON.parse(
-              localStorage.getItem("usuarioLogueado") || "{}",
-            );
-            console.log("Usuariologuedo", usuarioLogueado)
-            const token = usuarioLogueado.token || "";
-            console.log("Token", token)
+            const token = sfSession.getToken() || "";
             const respuesta = await fetch(`${BASE_URL}/servicios`, {
               method: "POST",
               headers: {
@@ -157,7 +149,6 @@ const BASE_URL = "https://backend-style-factory.onrender.com";
               body: JSON.stringify(servicio),
             });
 
-            console.log("Servicio: ", respuesta.body);
             if (!respuesta.ok) {
               const errorData = await respuesta.json().catch(() => ({}));
               throw new Error(
@@ -180,7 +171,7 @@ const BASE_URL = "https://backend-style-factory.onrender.com";
               "Lista de Servicios",
               JSON.stringify(listaActual),
             );
-            alert("Servicio Agregado");
+            await sfAlert("Servicio agregado correctamente.", "success");
 
             const modal = bootstrap.Modal.getInstance(
               document.getElementById("exampleModal"),
@@ -189,10 +180,10 @@ const BASE_URL = "https://backend-style-factory.onrender.com";
             if (onServicioGuardado) onServicioGuardado();
           } catch (error) {
             console.error("Error creando servicio:", error);
-            alert(error.message || "Error al crear el servicio");
+            await sfAlert(error.message || "Error al crear el servicio", "error");
           }
         } else {
-          alert("El Servicio ya Existe");
+          await sfAlert("Este servicio ya existe.", "warning");
         }  
       }
 
@@ -202,7 +193,7 @@ const BASE_URL = "https://backend-style-factory.onrender.com";
       preview.style.display = "none";
       imagenURL = "";
     } else {
-      alert("El formulario esta Incorrecto");
+      await sfAlert("Por favor completa correctamente todos los campos del formulario.", "warning");
     }
   });
 }

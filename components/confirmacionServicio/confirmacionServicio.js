@@ -66,16 +66,53 @@ function actualizarFechaHora(fechaLegible, hora, fechaISO = null) {
 }
 
 async function confirmarReserva() {
+  const token = sfSession.getToken();
+
+  // Sin token = sin sesión → redirigir al login
+  if (!token) {
+    await sfAlert('Debes iniciar sesión para reservar un servicio.', 'warning');
+    window.top.location.href = '/pages/login/login.html';
+    return;
+  }
+
+  // Obtener perfil desde Cache API
+  let perfil = await sfSession.getProfile();
+
+  if (!perfil) {
+    await sfAlert('No se pudo obtener tu información de sesión. Por favor inicia sesión de nuevo.', 'error');
+    window.top.location.href = '/pages/login/login.html';
+    return;
+  }
+
+  // Si el perfil no tiene id, buscarlo en GET /usuarios filtrando por correo
+  if (!perfil.id) {
+    try {
+      const res = await fetch(`${BASE_URL}/usuarios`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const lista = await res.json();
+        const correo = perfil.correo ?? perfil.email ?? '';
+        const encontrado = (Array.isArray(lista) ? lista : [])
+          .find(u => (u.correo ?? u.email ?? '').toLowerCase() === correo.toLowerCase());
+        if (encontrado?.id) {
+          perfil = { ...perfil, id: encontrado.id };
+          await sfSession.setProfile(perfil);
+        }
+      }
+    } catch (err) {
+      console.warn('No se pudo obtener el id del usuario desde /usuarios:', err.message);
+    }
+  }
+
   const servicio = JSON.parse(localStorage.getItem('servicioSeleccionado'));
-  const usuarioLogueado = JSON.parse(localStorage.getItem('usuarioLogueado'));
 
   const nombreServicio = servicio?.nombre?.toUpperCase() || reservaActual.servicio.nombre;
-  const precioServicio  = servicio?.precio || reservaActual.servicio.precio;
+  const precioServicio = servicio?.precio              || reservaActual.servicio.precio;
 
-  const usuarioId   = usuarioLogueado?.id ?? null;
-  const empleadoId  = reservaActual.profesional.id ?? null;
-  const servicioId  = servicio?.id ?? null;
-  const token       = usuarioLogueado?.token ?? null;
+  const usuarioId  = perfil.id ?? null;
+  const empleadoId = reservaActual.profesional.id ?? null;
+  const servicioId = servicio?.id ?? null;
 
   let fechaISO = reservaActual.fechaISO;
   if (!fechaISO && reservaActual.fecha) {
@@ -83,63 +120,75 @@ async function confirmarReserva() {
     if (partes.length === 3) fechaISO = `${partes[2]}-${partes[1]}-${partes[0]}`;
   }
 
-  if (token && usuarioId && empleadoId && servicioId && fechaISO) {
-    try {
-      const res = await fetch(`${BASE_URL}/reservas`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          fecha: fechaISO,
-          hora: reservaActual.hora,
-          estado: 'PENDIENTE',
-          usuarioId,
-          empleadoId,
-          servicioId,
-        }),
-      });
-      if (!res.ok) {
-        const err = await res.text().catch(() => null);
-        console.warn(`POST /reservas → ${res.status}`, err);
-      }
-    } catch (err) {
-      console.warn('No se pudo guardar la reserva en la API, se guardará solo localmente.', err);
-    }
+  // Guardar en la API
+  if (!empleadoId || !servicioId || !fechaISO) {
+    await sfAlert('Faltan datos para crear la reserva (empleado, servicio o fecha).', 'warning');
+    return;
   }
 
-  // Guardar siempre en localStorage como respaldo
+  let reservaGuardada = null;
+  try {
+    const fechaHora = `${fechaISO}T${reservaActual.hora}:00`;
+    const bodyReserva = {
+      fecha: fechaISO,
+      hora: reservaActual.hora,
+      fechaHora,
+      estado: 'PENDIENTE',
+      usuarioId,
+      empleadoId,
+      servicioId,
+    };
+    const res = await fetch(`${BASE_URL}/reservas`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(bodyReserva),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => `HTTP ${res.status}`);
+      console.error(`POST /reservas → ${res.status}`, errText);
+      await sfAlert(`No se pudo crear la reserva en el servidor (${res.status}). Intenta de nuevo.`, 'error');
+      return;
+    }
+
+    reservaGuardada = await res.json().catch(() => null);
+  } catch (err) {
+    console.error('Error de red al crear la reserva:', err);
+    await sfAlert('Error de conexión. Verifica tu internet e intenta de nuevo.', 'error');
+    return;
+  }
+
+  // Respaldo en localStorage para que el panel admin pueda leerla mientras migra
   const nuevaReserva = {
-    cliente: usuarioLogueado?.nombre ?? 'Invitado',
-    servicio: { nombre: nombreServicio, precio: precioServicio },
+    id:          reservaGuardada?.id ?? Date.now(),
+    cliente:     perfil.nombre,
+    servicio:    { nombre: nombreServicio, precio: precioServicio },
     profesional: reservaActual.profesional,
-    fecha: reservaActual.fecha,
-    hora: reservaActual.hora,
+    fecha:       reservaActual.fecha,
+    hora:        reservaActual.hora,
   };
   const reservas = JSON.parse(localStorage.getItem("reservas")) || [];
-  const maxId = reservas.length > 0 ? Math.max(...reservas.map(r => r.id || 0)) : 0;
-  nuevaReserva.id = maxId + 1;
   reservas.push(nuevaReserva);
   localStorage.setItem("reservas", JSON.stringify(reservas));
   localStorage.removeItem('servicioSeleccionado');
 
-  const mensaje = `
+  // Mostrar modal de confirmación
+  document.getElementById("mensajeConfirmacion").innerHTML = `
     <strong style="color:#28a745;">RESERVA CONFIRMADA</strong><br><br>
     ${nombreServicio}<br>
     ${reservaActual.profesional.nombre}<br>
     ${reservaActual.fecha} / ${reservaActual.hora}<br>
     ${formatearPrecio(precioServicio)}
   `;
-  document.getElementById("mensajeConfirmacion").innerHTML = mensaje;
 
-  const modalConfirmacion = new bootstrap.Modal(document.getElementById("modalConfirmacionReserva"));
-  modalConfirmacion.show();
-
-  document.getElementById("modalConfirmacionReserva")
-    .addEventListener("hidden.bs.modal", () => {
-      window.location.href = '/pages/aboutUs/aboutUs.html';
-    });
+  const modalEl = document.getElementById("modalConfirmacionReserva");
+  new bootstrap.Modal(modalEl).show();
+  modalEl.addEventListener("hidden.bs.modal", () => {
+    window.location.href = '/pages/aboutUs/aboutUs.html';
+  }, { once: true });
 
   return nuevaReserva;
 }

@@ -1,5 +1,6 @@
 import { initListaServicios } from "../listaServicios/listaServicios.js";
-import { initListaReservas } from "../listaReservas/listaReservas.js";
+import { initListaReservas }  from "../listaReservas/listaReservas.js";
+import { initEmpleados }      from "../empleados/empleados.js";
 
 fetch('/components/navbarAdmin/navbar_Admin.html')
     .then(res => res.text())
@@ -49,7 +50,9 @@ if (logoutBtn) {
     fetch(page)
       .then(res => res.text())
       .then(html => {
-        content.innerHTML = html;
+        const parser = new DOMParser();
+        const doc    = parser.parseFromString(html, 'text/html');
+        content.innerHTML = doc.body.innerHTML;
 
         if (page.includes("metricas")) {
           initMetricas();
@@ -59,9 +62,12 @@ if (logoutBtn) {
           initListaServicios();
         }
 
-        // ✅ Inicializa la lista de reservas
         if (page.includes("listaReservas")) {
           initListaReservas();
+        }
+
+        if (page.includes("empleados")) {
+          initEmpleados();
         }
       });
   }

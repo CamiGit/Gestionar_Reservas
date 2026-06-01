@@ -2,22 +2,19 @@
  * Actualiza la interfaz del navbar según el estado de sesión del usuario
  * Muestra el nombre del usuario logueado y oculta el botón de acceder
  */
-function actualizarNavbar() {
-  const usuarioLogueado = localStorage.getItem("usuarioLogueado");
+async function actualizarNavbar() {
+  const token = sfSession.getToken();
   const userInfo = document.getElementById("user-info");
   const accesoBotones = document.getElementById("acceso-botones");
   const userNameSpan = document.getElementById("userName");
   const adminLink = document.getElementById("admin-link");
 
-  if (usuarioLogueado) {
-    const usuario = JSON.parse(usuarioLogueado);
-    if (userNameSpan) userNameSpan.textContent = `Hola, ${usuario.nombre}`;
+  if (token) {
+    const usuario = await sfSession.getProfile();
+    if (userNameSpan) userNameSpan.textContent = `Hola, ${usuario?.nombre ?? ""}`;
     if (userInfo) userInfo.style.display = "block";
     if (accesoBotones) accesoBotones.style.display = "none";
-
-    if (adminLink) {
-      adminLink.style.display = usuario.rol === "admin" ? "block" : "none";
-    }
+    if (adminLink) adminLink.style.display = (usuario?.rol ?? "") === "admin" ? "block" : "none";
   } else {
     if (userInfo) userInfo.style.display = "none";
     if (accesoBotones) accesoBotones.style.display = "block";
@@ -25,17 +22,11 @@ function actualizarNavbar() {
   }
 }
 
-/**
- * Cierra la sesión del usuario eliminando solo los datos de sesión actual
- * Los usuarios registrados permanecen en localStorage para futuros inicios de sesión
- * Redirige a la página de inicio
- */
-function cerrarSesion() {
-  localStorage.removeItem("usuarioLogueado");
-  actualizarNavbar();
+async function cerrarSesion() {
+  await sfSession.clear();
   window.location.href = "/index.html";
 }
-const BASE_URL = "https://backend-style-factory.onrender.com"
+// BASE_URL declarado en confirmacionServicio.js (carga primero en reservations.html)
 
 /**
  * Carga los componentes comunes del navbar y footer
@@ -43,9 +34,9 @@ const BASE_URL = "https://backend-style-factory.onrender.com"
  */
 fetch("/components/navbar/navbar.html")
   .then((res) => res.text())
-  .then((html) => {
+  .then(async (html) => {
     document.getElementById("header").innerHTML = html;
-    actualizarNavbar();
+    await actualizarNavbar();
     const btnCerrarSesion = document.getElementById("btnCerrarSesion");
     if (btnCerrarSesion) {
       btnCerrarSesion.addEventListener("click", cerrarSesion);
@@ -115,51 +106,104 @@ document.addEventListener("DOMContentLoaded", renderizarReservas);
  */
 //obtener array de estilistas del endpoint
 async function cargarEstilistas() {
-  const token = localStorage.getItem("usuarioLogueado")
-    ? JSON.parse(localStorage.getItem("usuarioLogueado")).token
-    : null;
+  const token = sfSession.getToken();
 
+  // Limpiar caché vieja para forzar datos frescos del DB
+  localStorage.removeItem("estilistas");
+
+  // ── 1. Empleados ACTIVOS desde el DB (/empleados) ──────────────────────────
+  let idsActivos = null; // null = no se pudo consultar el DB
   try {
-    const respuesta = await fetch(`${BASE_URL}/horarios/agrupados`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    if (!respuesta.ok) {
-      throw new Error("Error al obtener los estilistas");
+    const resEmp = await fetch(`${BASE_URL}/empleados`);
+    if (resEmp.ok) {
+      const lista = await resEmp.json();
+      idsActivos = new Set(
+        (Array.isArray(lista) ? lista : [])
+          .filter(e => e.estado !== false)
+          .map(e => String(e.id))
+      );
     }
-    const estilistas = await respuesta.json();
-    localStorage.setItem("estilistas", JSON.stringify(estilistas));
-    const estilistasGuardados =
-      JSON.parse(localStorage.getItem("estilistas")) || [];
+  } catch { /* silencioso */ }
 
-    const carouselInner = document.getElementById("carouselInner");
-    const cantCards = 4;
-    for (let i = 0; i < estilistasGuardados.length; i += cantCards) {
-      const grupo = estilistasGuardados.slice(i, i + cantCards);
-      const item = document.createElement("div");
-      item.className = "carousel-item " + (i === 0 ? "active" : "");
-      let row = '<div class="row">';
-      grupo.forEach((est) => {
-        row += `
-      <div class="col-md-3">
-        <div class="card card-estilista" id="card-estilista-${est.id}" onclick="seleccionarEstilista(${est.idEmpleado})">
-          <img src="${est.urlImagen}" class="card-img-top" alt="${est.nombreEmpleado}">
-          <div class="card-body text-center">
-            <h5>${est.nombreEmpleado}</h5>
-            <p class="text-purple">${est.especialidad}</p>
-          </div>
-        </div>
-      </div>
-    `;
-      });
-      row += "</div>";
-      item.innerHTML = row;
-      carouselInner.appendChild(item);
+  // ── 2. Estilistas con horarios desde el DB (/horarios/agrupados) ────────────
+  let estilistas = null;
+  for (const auth of [`Bearer ${token}`, "Bearer null", ""]) {
+    try {
+      const opts = auth ? { headers: { Authorization: auth } } : {};
+      const res  = await fetch(`${BASE_URL}/horarios/agrupados`, opts);
+      if (res.ok) { estilistas = await res.json(); break; }
+      console.warn(`/horarios/agrupados → ${res.status}`);
+    } catch (err) {
+      console.warn("Error /horarios/agrupados:", err.message);
     }
-  } catch (error) {
-    console.error("Error al cargar los estilistas:", error);
-    return [];
+  }
+
+  // Si el DB no responde no mostramos datos obsoletos del caché
+  if (!estilistas || !estilistas.length) {
+    const carouselInner = document.getElementById("carouselInner");
+    if (carouselInner) {
+      carouselInner.innerHTML = `
+        <div class="carousel-item active">
+          <p class="text-center text-muted py-4">
+            No hay estilistas disponibles. Inicia sesión como cliente para verlos.
+          </p>
+        </div>`;
+    }
+    return;
+  }
+
+  // ── 3. Filtrar: solo estilistas cuyo empleado esté activo ──────────────────
+  if (idsActivos !== null) {
+    // Filtro principal: cruce con el DB de empleados activos
+    estilistas = estilistas.filter(e => idsActivos.has(String(e.idEmpleado)));
+  } else {
+    // El DB no respondió: usar blacklist del panel admin como respaldo
+    const deletedIds = JSON.parse(localStorage.getItem("admin_empleados_eliminados") || "[]");
+    if (deletedIds.length) {
+      estilistas = estilistas.filter(e => !deletedIds.includes(String(e.idEmpleado)));
+    }
+  }
+
+  if (!estilistas.length) {
+    const carouselInner = document.getElementById("carouselInner");
+    if (carouselInner) {
+      carouselInner.innerHTML = `
+        <div class="carousel-item active">
+          <p class="text-center text-muted py-4">
+            No hay estilistas disponibles.
+          </p>
+        </div>`;
+    }
+    return;
+  }
+
+  // Guardar solo para que seleccionarEstilista pueda leer los datos
+  localStorage.setItem("estilistas", JSON.stringify(estilistas));
+
+  const carouselInner = document.getElementById("carouselInner");
+  if (!carouselInner) return;
+
+  const cantCards = 4;
+  for (let i = 0; i < estilistas.length; i += cantCards) {
+    const grupo = estilistas.slice(i, i + cantCards);
+    const item  = document.createElement("div");
+    item.className = "carousel-item " + (i === 0 ? "active" : "");
+    let row = '<div class="row">';
+    grupo.forEach((est) => {
+      row += `
+        <div class="col-md-3">
+          <div class="card card-estilista" id="card-estilista-${est.idEmpleado}" onclick="seleccionarEstilista(${est.idEmpleado})">
+            <img src="${est.urlImagen}" class="card-img-top" alt="${est.nombreEmpleado}">
+            <div class="card-body text-center">
+              <h5>${est.nombreEmpleado}</h5>
+              <p class="text-purple">${est.especialidad}</p>
+            </div>
+          </div>
+        </div>`;
+    });
+    row += "</div>";
+    item.innerHTML = row;
+    carouselInner.appendChild(item);
   }
 }
 
@@ -202,16 +246,66 @@ const DIAS_SEM = ["D", "L", "M", "M", "J", "V", "S"];
  * @param {number} id - Identificador del estilista seleccionado
  */
 
-function seleccionarEstilista(id) {
-  const estilistasGuardados =
-    JSON.parse(localStorage.getItem("estilistas")) || [];
-  const estilista = estilistasGuardados.find((e) => e.idEmpleado === id);
+async function seleccionarEstilista(id) {
+  const estilistasGuardados = JSON.parse(localStorage.getItem("estilistas")) || [];
+  let estilista = estilistasGuardados.find((e) => String(e.idEmpleado) === String(id));
   if (!estilista) return;
+
+  // Si no tiene fechas, intentar cargarlas desde el backend
+  if (!estilista.fechas || !Object.keys(estilista.fechas).length) {
+    estilista = await cargarFechasEstilista(estilista);
+  }
+
   document.getElementById("seccionCalendario").style.display = "block";
-  document
-    .getElementById("seccionCalendario")
-    .scrollIntoView({ behavior: "smooth" });
+  document.getElementById("seccionCalendario").scrollIntoView({ behavior: "smooth" });
   initFechaHora(estilista);
+}
+
+async function cargarFechasEstilista(estilista) {
+  const token = sfSession.getToken();
+
+  try {
+    const res = await fetch(`${BASE_URL}/horarios`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    console.log(`GET /horarios → ${res.status}`);
+    if (!res.ok) return estilista;
+
+    const lista = await res.json();
+
+    // El DTO usa "idEmmpleado" (typo con doble m en el backend)
+    const filtrados = lista.filter(h =>
+      String(h.idEmmpleado ?? h.idEmpleado ?? h.empleadoId ?? "") === String(estilista.idEmpleado)
+    );
+
+    if (!filtrados.length) {
+      console.warn(`Sin horarios para empleado ${estilista.idEmpleado}. Total horarios: ${lista.length}`);
+      return estilista;
+    }
+
+    // fechaHora viene como "2026-06-01T09:00:00" (LocalDateTime)
+    // Separar en fecha "YYYY-MM-DD" y hora "HH:MM"
+    const fechas = {};
+    filtrados.forEach(h => {
+      if (!h.fechaHora) return;
+      const [fechaParte, horaParte] = h.fechaHora.split("T");
+      const hora = horaParte?.substring(0, 5); // "09:00"
+      if (!fechaParte || !hora) return;
+      if (!fechas[fechaParte]) fechas[fechaParte] = [];
+      if (!fechas[fechaParte].includes(hora)) fechas[fechaParte].push(hora);
+    });
+
+    Object.keys(fechas).forEach(f => fechas[f].sort());
+    console.log(`Fechas para empleado ${estilista.idEmpleado}:`, fechas);
+
+    if (Object.keys(fechas).length) {
+      return { ...estilista, fechas };
+    }
+  } catch (err) {
+    console.warn("GET /horarios error:", err.message);
+  }
+
+  return estilista;
 }
 
 /**

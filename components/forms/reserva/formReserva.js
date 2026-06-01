@@ -201,7 +201,7 @@ formulario.addEventListener('submit', async function(e) {
                     mensajeExito.style.display = 'none';
                 }, 5000);
             } else {
-                alert('Hubo un error. Intenta nuevamente.');
+                sfAlert('Hubo un error. Intenta nuevamente.', 'error');
             }
 
             // Restaurar el botón
@@ -212,7 +212,7 @@ formulario.addEventListener('submit', async function(e) {
     } catch (error) {
         // Error de conexión
         mensajeEnviando.style.display = 'none';
-        alert('Error de conexión. Revisa tu internet.');
+        sfAlert('Error de conexión. Revisa tu internet.', 'error');
         boton.textContent = textoOriginal;
         boton.disabled = false;
     }
