@@ -80,16 +80,10 @@ fetch('/components/navbar/navbar.html')
             // 2. Obtenemos el nombre del archivo del href del enlace
             let rutaEnlace = enlace.getAttribute('href').split("/").pop();
             
-<<<<<<< HEAD
             
             if(rutaEnlace == rutaActual){
                 enlace.classList.add('active');
 
-=======
-            if(rutaEnlace == rutaActual){
-                enlace.classList.add('active');
-                
->>>>>>> Dev
              }else {
                  enlace.classList.remove('active');
              }

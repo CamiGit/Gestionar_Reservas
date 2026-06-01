@@ -1,5 +1,6 @@
-import { productos } from '../../assets/js/productosCatalogo.js';
 
+//Revisar los servicios deben llegar e localStorage
+const productos = JSON.parse(localStorage.getItem('Lista de Servicios')) || [];
 let filtroTipoActivo = 'todos';
 
 function actualizarNavbar() {
@@ -33,6 +34,7 @@ function cerrarSesion() {
 
 function enriquecerProducto(producto) {
     const base = productos.find(function (p) { return p.id === producto.id; }) || {};
+    console.log("Enriqueciendo producto:", producto, "con base:", base);
     return Object.assign({}, base, producto, {
         tipo: producto.tipo || base.tipo || '',
         duracionMinutos: producto.duracionMinutos ?? base.duracionMinutos ?? 60
@@ -40,7 +42,8 @@ function enriquecerProducto(producto) {
 }
 
 function obtenerProductosActivos() {
-    const lista = JSON.parse(localStorage.getItem('Lista de Servicios')) || productos;
+    const lista = JSON.parse(localStorage.getItem('Lista de Servicios')) || [];
+    console.log("Lista de servicios obtenida de localStorage:", lista);
     return lista
         .filter(producto => producto.status === true || producto.status === 'true')
         .map(enriquecerProducto);
@@ -111,6 +114,7 @@ function renderizarCatalogo() {
     }
 
     const productosActivos = obtenerProductosActivos();
+    console.log("Productos activos obtenidos:", productosActivos);
     renderizarFiltros(productosActivos);
 
     const filtrados = filtroTipoActivo === 'todos'
@@ -126,8 +130,9 @@ function renderizarCatalogo() {
 
     container.style.display = 'grid';
     if (vacio) vacio.style.display = 'none';
-
+ console.log("Productos a renderizar:", filtrados);
     container.innerHTML = filtrados.map(function (producto) {
+        console.log("Producto activo para renderizar:", producto);
         const precioFormateado = Number(producto.precio).toLocaleString('es-CO');
         const duracion = producto.duracionMinutos ?? 60;
         const tipo = (producto.tipo || '').trim();
@@ -213,7 +218,6 @@ if (document.getElementById('cards-container')) {
         })
         .catch(function (err) { console.error('Error cargando el footer:', err); });
 
-<<<<<<< HEAD
     document.addEventListener('DOMContentLoaded', renderizarCatalogo);
 }
 
@@ -235,19 +239,14 @@ let btnReservar;
 /**
  * Renderiza el catálogo de servicios en el contenedor correspondiente
  * Filtra solo los servicios activos y genera las tarjetas dinámicamente
- */
-function renderizarCatalogo() {
+ * function renderizarCatalogo() {
     const container = document.getElementById('cards-container');
     if (!container) {
         console.error("No se encontró el contenedor 'cards-container'");
         return;
     }
  //console para traer el array de servicios desde localStorage
-    console.log("Servicios obtenidos de localStorage:", JSON.parse(localStorage.getItem("Lista de Servicios")));
-    const lista = JSON.parse(localStorage.getItem("Lista de Servicios")) || [];
-    const productosActivos = lista.filter(producto => producto.estado === true || producto.estado === "true");
-     
-    console.log("Productos activos filtrados:", productosActivos);
+   
     const html = productosActivos.map(producto => {
         console.log("Producto activo:", producto);
         const precioFormateado = Number(producto.precio).toLocaleString('es-CO');
@@ -279,25 +278,9 @@ function renderizarCatalogo() {
         });
     });
 }
+ */
 
-document.addEventListener('DOMContentLoaded', renderizarCatalogo);
+
+
 
 export { btnReservar };
-=======
-    const btnVerTodos = document.getElementById('btn-ver-todos');
-    if (btnVerTodos) {
-        btnVerTodos.addEventListener('click', function () {
-            filtroTipoActivo = 'todos';
-            renderizarCatalogo();
-        });
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', renderizarCatalogo);
-    } else {
-        renderizarCatalogo();
-    }
-}
-
-export { productos };
->>>>>>> Dev
