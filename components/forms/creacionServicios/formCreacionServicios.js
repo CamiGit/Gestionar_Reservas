@@ -14,7 +14,7 @@ function limpiarError(errorId) {
   if (errorSpan) errorSpan.textContent = "";
 }
 
-function validarFormulario(nombre, descripcion, precio) {
+function validarFormulario(nombre, descripcion, precio, tipoServicio) {
   let esValido = true;
 
   if (!validar(nombre)) {
@@ -31,6 +31,11 @@ function validarFormulario(nombre, descripcion, precio) {
     mostrarError("errorPrecio", "¡Introduzca un precio Valido!");
     esValido = false;
   } else limpiarError("errorPrecio");
+
+  if (!validar(tipoServicio)) {
+    mostrarError("errorTipoServicio", "El tipo de servicio es obligatorio");
+    esValido = false;
+  } else limpiarError("errorTipoServicio");
 
   return esValido;
 }
@@ -73,12 +78,13 @@ const BASE_URL = "https://backend-style-factory.onrender.com";
     const nombre = document.querySelector("#nombre").value.trim();
     const descripcion = document.querySelector("#descripcion").value.trim();
     const precio = document.querySelector("#precio").value.trim();
+    const tipoServicio = document.querySelector("#tipoServicio").value.trim();
     const statusEl = document.querySelector('input[name="status"]:checked');
     const status = statusEl ? statusEl.value : "true";
     const editIndex = document.getElementById("editIndex").value;
     const esEdicion = editIndex !== "";
 
-    const esValido = validarFormulario(nombre, descripcion, precio);
+    const esValido = validarFormulario(nombre, descripcion, precio, tipoServicio);
 
     if (esValido) {
       const listaActual =
@@ -90,7 +96,7 @@ const BASE_URL = "https://backend-style-factory.onrender.com";
           descripcion,
           precio: Number(precio),
           urlImagen: imagenURL || servicioBase.urlImagen || "",
-          tipoServicio: servicioBase.tipoServicio || "Personalizado",
+          tipoServicio,
           estado: status === "true",
         };
 
@@ -129,11 +135,11 @@ const BASE_URL = "https://backend-style-factory.onrender.com";
 
         if (!existe) {
           const servicio = {
-            nombre: nombre,
-            descripcion: descripcion,
+            nombre,
+            descripcion,
             urlImagen: imagenURL || "",
             precio: Number(precio),
-            tipoServicio: "Personalizado",
+            tipoServicio,
             estado: true
           };
 

@@ -52,4 +52,13 @@
   overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
 }
 
+.btn-activar {
+  color: #16a34a;
+}
+
+.btn-activar:hover {
+  background: #dcfce7;
+  color: #15803d;
+}
+
 

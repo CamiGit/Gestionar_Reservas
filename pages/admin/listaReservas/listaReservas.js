@@ -19,7 +19,7 @@ function renderizarTablaReservas(reservas) {
         const servicio   = reserva.nombreServicio ?? "—";
         const fecha      = reserva.fecha ?? "—";
         const hora       = reserva.hora ? String(reserva.hora).substring(0, 5) : "—";
-        const estadoBadge = (reserva.estado ?? "pendiente").toLowerCase();
+        const estadoBadge = "confirmada";
 
         tbody.innerHTML += `
             <tr>
@@ -29,7 +29,7 @@ function renderizarTablaReservas(reservas) {
                 <td>${servicio}</td>
                 <td>${fecha}</td>
                 <td>${hora}</td>
-                <td><span class="badge-estado ${estadoBadge}">${(reserva.estado ?? "PENDIENTE").toUpperCase()}</span></td>
+                <td><span class="badge-estado confirmada">CONFIRMADO</span></td>
                 <td class="celda-acciones">
                     <button class="btn-accion btn-eliminar-reserva" data-id="${reserva.id ?? ''}" title="Eliminar">
                         <i class="fa-solid fa-trash"></i>
@@ -84,6 +84,25 @@ export function initListaReservas() {
     // Evitar registrar los listeners globales más de una vez
     if (listaReservasInicializado) return;
     listaReservasInicializado = true;
+
+    // Confirmar reserva pendiente
+    document.addEventListener("click", async function (e) {
+        const btn = e.target.closest(".btn-confirmar-reserva");
+        if (!btn) return;
+        const token = sfSession.getToken();
+        try {
+            const res = await fetch(`${BASE_URL}/reservas/${btn.dataset.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ estado: "CONFIRMADA" }),
+            });
+            if (!res.ok) throw new Error(`Error ${res.status}`);
+            await sfAlert("Reserva confirmada correctamente.", "success");
+            cargarReservasDesdeAPI();
+        } catch (err) {
+            await sfAlert("No se pudo confirmar la reserva.", "error");
+        }
+    });
 
     // Abrir modal al hacer clic en eliminar
     document.addEventListener("click", function (e) {

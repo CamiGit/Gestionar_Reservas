@@ -163,6 +163,16 @@
     transform: translateY(-2px);
 }
 
+.btn-confirmar-reserva {
+    color: #16a34a;
+}
+
+.btn-confirmar-reserva:hover {
+    background-color: #16a34a;
+    border-color: #16a34a;
+    color: #ffffff;
+}
+
 
 /* Responsive */
 @media (max-width: 768px) {

@@ -187,7 +187,7 @@ async function confirmarReserva() {
   const modalEl = document.getElementById("modalConfirmacionReserva");
   new bootstrap.Modal(modalEl).show();
   modalEl.addEventListener("hidden.bs.modal", () => {
-    window.location.href = '/pages/aboutUs/aboutUs.html';
+    window.top.location.href = '/pages/perfilUsuario/perfilUsuario.html';
   }, { once: true });
 
   return nuevaReserva;

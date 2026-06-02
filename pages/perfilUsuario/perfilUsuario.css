@@ -713,12 +713,38 @@ body::before {
 /* Cada fila de reserva */
 .reserva-item {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 1rem;
     padding: 0.875rem 0;
     border-bottom: 1px solid var(--border);
     animation: fadeUp 0.4s ease both;
     transition: background 0.2s;
+}
+
+.reserva-acciones {
+    margin-left: auto;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.btn-cancelar-reserva {
+    background: transparent;
+    border: 1px solid #dc2626;
+    color: #dc2626;
+    border-radius: 20px;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.78rem;
+    font-family: 'Montserrat', sans-serif;
+    cursor: pointer;
+    transition: 0.2s;
+    white-space: nowrap;
+}
+
+.btn-cancelar-reserva:hover {
+    background: #dc2626;
+    color: #fff;
 }
 
 .reserva-item:first-child { padding-top: 0; }

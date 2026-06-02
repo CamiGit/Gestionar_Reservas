@@ -9,7 +9,7 @@ export async function renderizarTabla() {
   const tbody = document.getElementById("tabla-servicios");
   if (!tbody) return;
 
-  const spinner = (msg) => `<tr><td colspan="5"><div style="display:flex;flex-direction:column;align-items:center;padding:2rem;gap:.75rem;"><div style="width:40px;height:40px;border:3px solid #f0e6ff;border-top-color:#522676;border-radius:50%;animation:sf-spin 0.8s linear infinite;"></div><span style="color:#888;font-size:.85rem;">${msg}</span></div><style>@keyframes sf-spin{to{transform:rotate(360deg);}}</style></td></tr>`;
+  const spinner = (msg) => `<tr><td colspan="6"><div style="display:flex;flex-direction:column;align-items:center;padding:2rem;gap:.75rem;"><div style="width:40px;height:40px;border:3px solid #f0e6ff;border-top-color:#522676;border-radius:50%;animation:sf-spin 0.8s linear infinite;"></div><span style="color:#888;font-size:.85rem;">${msg}</span></div><style>@keyframes sf-spin{to{transform:rotate(360deg);}}</style></td></tr>`;
 
   const intentosMax = 3;
   for (let intento = 1; intento <= intentosMax; intento++) {
@@ -31,7 +31,7 @@ export async function renderizarTabla() {
 
   if (!serviciosEnMemoria.length) {
     tbody.innerHTML = `
-      <tr><td colspan="5">
+      <tr><td colspan="6">
         <div style="display:flex;flex-direction:column;align-items:center;padding:2rem;gap:1rem;">
           <i class="fa-solid fa-circle-exclamation fa-2x" style="color:#d97706;"></i>
           <p style="color:#555;font-size:.9rem;margin:0;text-align:center;">No se pudieron cargar los servicios.<br>El servidor puede estar iniciando.</p>
@@ -53,14 +53,16 @@ export async function renderizarTabla() {
         <td>#ID-${servicio.id ?? index + 1}</td>
         <td>${servicio.nombre}</td>
         <td><div class="text-truncate">${servicio.descripcion}</div></td>
+        <td>${servicio.tipoServicio ?? "—"}</td>
         <td><span class="badge-estado ${estadoClase}">${estadoTexto}</span></td>
         <td class="celda-acciones">
           <button class="btn-accion btn-editar" data-index="${index}" title="Editar">
             <i class="fa-solid fa-pen"></i>
           </button>
-          <button class="btn-accion btn-eliminar" data-index="${index}" data-id="${servicio.id}" title="Eliminar">
-            <i class="fa-solid fa-trash"></i>
-          </button>
+          ${servicio.estado === false || servicio.estado === "false"
+            ? `<button class="btn-accion btn-activar" data-index="${index}" title="Activar"><i class="fa-solid fa-circle-check"></i></button>`
+            : `<button class="btn-accion btn-eliminar" data-index="${index}" data-id="${servicio.id}" title="Desactivar"><i class="fa-solid fa-trash"></i></button>`
+          }
         </td>
       </tr>
     `;
@@ -91,23 +93,35 @@ export function initListaServicios() {
     const btnEliminar = e.target.closest(".btn-eliminar");
     if (btnEliminar) {
       indexAEliminar = Number(btnEliminar.dataset.index);
-      const servicioId = btnEliminar.dataset.id ?? serviciosEnMemoria[indexAEliminar]?.id;
+      new bootstrap.Modal(document.getElementById("modalEliminar")).show();
+      return;
+    }
+
+    const btnActivar = e.target.closest(".btn-activar");
+    if (btnActivar) {
+      const index = Number(btnActivar.dataset.index);
+      const servicio = serviciosEnMemoria[index];
+      if (!servicio) return;
       const token = sfSession.getToken() || "";
       try {
-        const respuesta = await fetch(`${BASE_URL}/servicios/${servicioId}`, {
-          method: "DELETE",
-          headers: { "Authorization": `Bearer ${token}` },
+        const respuesta = await fetch(`${BASE_URL}/servicios/${servicio.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify({ ...servicio, estado: true }),
         });
         if (!respuesta.ok) {
           const errorData = await respuesta.json().catch(() => ({}));
-          throw new Error(errorData.message || "No se pudo eliminar el servicio.");
+          throw new Error(errorData.message || "No se pudo activar el servicio.");
         }
+        await sfAlert("Servicio activado correctamente.", "success");
+        renderizarTabla();
       } catch (error) {
-        console.error("Error al intentar eliminar el servicio:", error);
-        await sfAlert(error.message || "Error al eliminar el servicio.", "error");
-        return;
+        console.error("Error al activar el servicio:", error);
+        await sfAlert(error.message || "Error al activar el servicio.", "error");
       }
-      new bootstrap.Modal(document.getElementById("modalEliminar")).show();
       return;
     }
 
@@ -121,6 +135,7 @@ export function initListaServicios() {
         document.getElementById("nombre").value = servicioAEditar.nombre;
         document.getElementById("descripcion").value = servicioAEditar.descripcion;
         document.getElementById("precio").value = servicioAEditar.precio;
+        document.getElementById("tipoServicio").value = servicioAEditar.tipoServicio || "";
         document.getElementById("preview").src = servicioAEditar.urlImagen || "";
         document.getElementById("preview").style.display = servicioAEditar.urlImagen ? "block" : "none";
         document.getElementById("editIndex").value = index;
@@ -133,9 +148,30 @@ export function initListaServicios() {
 
   const btnConfirmar = document.getElementById("btn-confirmar-eliminar");
   if (btnConfirmar) {
-    btnConfirmar.addEventListener("click", function () {
-      bootstrap.Modal.getInstance(document.getElementById("modalEliminar")).hide();
-      renderizarTabla();
+    btnConfirmar.addEventListener("click", async function () {
+      const servicio = serviciosEnMemoria[indexAEliminar];
+      if (!servicio) return;
+      const token = sfSession.getToken() || "";
+      try {
+        const respuesta = await fetch(`${BASE_URL}/servicios/${servicio.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify({ ...servicio, estado: false }),
+        });
+        if (!respuesta.ok) {
+          const errorData = await respuesta.json().catch(() => ({}));
+          throw new Error(errorData.message || "No se pudo desactivar el servicio.");
+        }
+        bootstrap.Modal.getInstance(document.getElementById("modalEliminar")).hide();
+        await sfAlert("Servicio desactivado correctamente.", "success");
+        renderizarTabla();
+      } catch (error) {
+        console.error("Error al desactivar el servicio:", error);
+        await sfAlert(error.message || "Error al desactivar el servicio.", "error");
+      }
     });
   }
 }

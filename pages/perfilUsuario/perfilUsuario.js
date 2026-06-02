@@ -209,8 +209,8 @@ function pintarPerfil(u) {
 
 function getEstadoMeta(estado) {
     const map = {
-        pendiente:  { label: 'Pendiente',  color: '#d97706', bg: 'rgba(217,119,6,0.1)',  icon: 'fa-clock' },
-        confirmada: { label: 'Confirmada', color: '#059669', bg: 'rgba(5,150,105,0.1)',  icon: 'fa-circle-check' },
+        pendiente:  { label: 'Confirmado', color: '#059669', bg: 'rgba(5,150,105,0.1)',  icon: 'fa-circle-check' },
+        confirmada: { label: 'Confirmado', color: '#059669', bg: 'rgba(5,150,105,0.1)',  icon: 'fa-circle-check' },
         completada: { label: 'Completada', color: '#522676', bg: 'rgba(82,34,118,0.1)',  icon: 'fa-circle-check' },
         cancelada:  { label: 'Cancelada',  color: '#dc2626', bg: 'rgba(220,38,38,0.1)',  icon: 'fa-circle-xmark' },
     };
@@ -297,7 +297,6 @@ function crearElementoReserva(r, idx) {
     spanEstado.appendChild(document.createTextNode(' ' + estado.label));
 
     top.appendChild(spanServicio);
-    top.appendChild(spanEstado);
 
     const meta = document.createElement('div');
     meta.className = 'reserva-meta';
@@ -310,6 +309,14 @@ function crearElementoReserva(r, idx) {
     body.appendChild(meta);
     item.appendChild(icono);
     item.appendChild(body);
+
+    // Grupo derecho: estado + botón cancelar alineados
+    const acciones = document.createElement('div');
+    acciones.className = 'reserva-acciones';
+    acciones.appendChild(spanEstado);
+
+
+    item.appendChild(acciones);
     return item;
 }
 
@@ -350,10 +357,8 @@ function renderReservas(reservas) {
  * 6. STATS
  * --------------------------------------------------------- */
 
-function renderStats(totalReservas) {
-    const reservasCount  = document.getElementById('reservasCount');
-    const favoritosCount = document.getElementById('favoritosCount');
-    const puntosCount    = document.getElementById('puntosCount');
+function renderStats(totalReservas, reservas = []) {
+    const reservasCount = document.getElementById('reservasCount');
 
     const statsGrid = document.querySelector('.stats-grid');
     if (statsGrid) {
@@ -361,17 +366,52 @@ function renderStats(totalReservas) {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     animarContador(reservasCount, totalReservas);
-                    if (favoritosCount) favoritosCount.textContent = 0;
-                    if (puntosCount)    puntosCount.textContent    = 0;
                     observer.disconnect();
                 }
             });
         }, { threshold: 0.3 });
         observer.observe(statsGrid);
     } else {
-        if (reservasCount)  reservasCount.textContent  = totalReservas;
-        if (favoritosCount) favoritosCount.textContent = 0;
-        if (puntosCount)    puntosCount.textContent    = 0;
+        if (reservasCount) reservasCount.textContent = totalReservas;
+    }
+
+    // Calcular profesional favorito
+    const profEl = document.getElementById('profesionalFavorito');
+    if (profEl) {
+        const conteo = {};
+        reservas.forEach(r => {
+            const nombre = r.nombreEmpleado || '';
+            if (nombre) conteo[nombre] = (conteo[nombre] || 0) + 1;
+        });
+        const favorito = Object.entries(conteo).sort((a, b) => b[1] - a[1])[0];
+        profEl.textContent = favorito ? favorito[0] : '—';
+    }
+
+    // Calcular próxima cita
+    const fechaEl = document.getElementById('proximaCitaFecha');
+    const horaEl  = document.getElementById('proximaCitaHora');
+    if (!fechaEl) return;
+
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    const proxima = reservas
+        .map(r => {
+            const raw = r.fechaHora || r.fecha || '';
+            const fechaStr = raw.includes('T') ? raw.split('T')[0] : raw;
+            const hora = (r.hora || '00:00:00').substring(0, 5);
+            return { fechaStr, hora };
+        })
+        .filter(r => r.fechaStr >= todayStr)
+        .sort((a, b) => a.fechaStr.localeCompare(b.fechaStr) || a.hora.localeCompare(b.hora))[0];
+
+    if (proxima) {
+        // Usar new Date(fechaStr) igual que crearElementoReserva → parsing UTC → misma fecha visible
+        const dateObj = new Date(proxima.fechaStr);
+        fechaEl.textContent = dateObj.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+        if (horaEl) horaEl.textContent = proxima.hora;
+    } else {
+        fechaEl.textContent = 'Sin citas';
+        if (horaEl) horaEl.textContent = '';
     }
 }
 
@@ -443,7 +483,7 @@ async function renderPerfilUsuario() {
 
         _reservasActuales = reservas;
         pintarPerfil(usuarioParaMostrar);
-        renderStats(reservas.length);
+        renderStats(reservas.length, reservas);
         renderReservas(reservas);
 
     } catch (err) {

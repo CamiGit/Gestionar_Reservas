@@ -18,10 +18,21 @@
             <span class="error" id="errorDescripcion"></span>
         </div>
 
-        <div class="input-group ultimo_input_group">
+        <div class="input-group">
             <input type="text" id="precio" name="precio" required placeholder="">
             <label>Precio</label>
             <span class="error" id="errorPrecio"></span>
+        </div>
+
+        <div class="input-group ultimo_input_group">
+            <select id="tipoServicio" name="tipoServicio" required>
+                <option value="" disabled selected hidden></option>
+                <option value="Personalizado">Personalizado</option>
+                <option value="Estandar">Estándar</option>
+                <option value="Premium">Premium</option>
+            </select>
+            <label>Tipo de Servicio</label>
+            <span class="error" id="errorTipoServicio"></span>
         </div>
         <div class="contenedor_subir_imagen">
             <label>Subir Imagen</label>

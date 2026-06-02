@@ -10,6 +10,7 @@ let estado = {
   modo: "crear",          // "crear" | "editar" | "horarios"
   paso: 1,
   empleadoId: null,
+  usuarioId: null,
   imagenURL: "",
   horariosPendientes: {}, // solo se usa en modo "crear": { "YYYY-MM-DD": ["HH:MM",...] }
 };
@@ -150,16 +151,12 @@ function renderTablaEmpleados(empleados) {
         <td>${emp.especialidad ?? "—"}</td>
         <td>${foto}</td>
         <td class="celda-acciones">
-          <button class="btn-accion btn-editar-emp"  data-index="${i}"    title="Editar datos"><i class="fa-solid fa-pen"></i></button>
           <button class="btn-accion btn-ver-horario" data-id="${emp.id}" data-nombre="${nombre}" title="Gestionar horarios"><i class="fa-regular fa-calendar"></i></button>
           <button class="btn-accion btn-eliminar-emp" data-id="${emp.id}" data-index="${i}" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
         </td>
       </tr>`;
   }).join("");
 
-  tbody.querySelectorAll(".btn-editar-emp").forEach(btn =>
-    btn.addEventListener("click", () => abrirModoEditar(empleadosActuales[+btn.dataset.index]))
-  );
   tbody.querySelectorAll(".btn-ver-horario").forEach(btn =>
     btn.addEventListener("click", () => abrirModoHorarios(btn.dataset.id, btn.dataset.nombre))
   );
@@ -241,23 +238,37 @@ async function cargarSelectUsuarios() {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-function abrirModoEditar(emp) {
+async function abrirModoEditar(emp) {
   resetEstado();
   estado.modo       = "editar";
   estado.empleadoId = emp.id;
   estado.imagenURL  = emp.urlImagen ?? "";
 
-  document.getElementById("empEditId").value           = emp.id;
-  document.getElementById("empNombre").value           = emp.nombre ?? emp.nombreEmpleado ?? "";
-  document.getElementById("empEspecialidad").value     = emp.especialidad ?? "";
+  // Intentar obtener el usuario_id desde el detalle del empleado
+  try {
+    const res = await fetch(`${BASE_URL}/empleados/${emp.id}`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    if (res.ok) {
+      const detalle = await res.json();
+      estado.usuarioId = detalle.usuarioId ?? detalle.usuario_id ?? detalle.usuario?.id ?? emp.usuarioId ?? null;
+    }
+  } catch (err) {
+    console.warn("No se pudo obtener detalle del empleado:", err.message);
+    estado.usuarioId = emp.usuarioId ?? null;
+  }
+
+  document.getElementById("empEditId").value            = emp.id;
+  document.getElementById("empNombre").value            = emp.nombre ?? emp.nombreEmpleado ?? "";
+  document.getElementById("empEspecialidad").value      = emp.especialidad ?? "";
   mostrarCampoUsuario(false);
   document.getElementById("tituloModalEmp").textContent = "Editar Empleado";
-  document.getElementById("lblFoto").textContent       = "Cambiar archivo";
+  document.getElementById("lblFoto").textContent        = "Cambiar archivo";
 
   if (emp.urlImagen) {
-    document.getElementById("empImagenURL").value        = emp.urlImagen;
-    document.getElementById("empPreview").src            = emp.urlImagen;
-    document.getElementById("empPreview").style.display  = "block";
+    document.getElementById("empImagenURL").value         = emp.urlImagen;
+    document.getElementById("empPreview").src             = emp.urlImagen;
+    document.getElementById("empPreview").style.display   = "block";
     document.getElementById("empAvatarIcon").style.display = "none";
   }
 
@@ -433,7 +444,8 @@ async function guardarDatosEmpleado() {
   const payload = {
     nombre:       document.getElementById("empNombre").value.trim(),
     especialidad: document.getElementById("empEspecialidad").value.trim(),
-    ...(estado.imagenURL ? { url: estado.imagenURL } : {}),
+    ...(estado.usuarioId  ? { usuario_id: estado.usuarioId } : {}),
+    ...(estado.imagenURL  ? { url: estado.imagenURL } : {}),
   };
   const btn = document.getElementById("btnGuardarDatos");
   btn.disabled = true; btn.textContent = "Guardando...";
@@ -780,7 +792,7 @@ function initModalEliminar() {
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 
 function resetEstado() {
-  estado = { modo: "crear", paso: 1, empleadoId: null, imagenURL: "", horariosPendientes: {} };
+  estado = { modo: "crear", paso: 1, empleadoId: null, usuarioId: null, imagenURL: "", horariosPendientes: {} };
 }
 
 function resetFormularioDatos() {
